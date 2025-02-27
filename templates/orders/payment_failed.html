@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow-sm">
+                <div class="card-body text-center p-5">
+                    <div class="mb-4">
+                        <i class="fas fa-times-circle text-danger" style="font-size: 20px;"></i>
+                    </div>
+                    <h2 class="mb-4">Payment Failed!</h2>
+                    <h5>Sorry, the payment could not be processed</h5>
+                    <h5>Please try again or contact support.</h5>
+                    <br>
+                    <a href="{% url 'store' %}">Go back to store</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+
+
+{% comment %} <!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Payment Failed</title>
+</head>
+<body>
+    <h1>Payment Failed</h1>
+    <p>Sorry, the payment could not be processed. Please try again or contact support.</p>
+    <a href="{% url 'store' %}">Go back to store</a>
+</body>
+</html> {% endcomment %}

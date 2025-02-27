@@ -1,0 +1,292 @@
+{% load static %}
+<!DOCTYPE HTML>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="cache-control" content="max-age=604800" />
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    
+    <title>One of the Biggest Online Shopping Platforms</title>
+
+    <!-- Favicon -->
+    {% comment %} <link href="{% static 'images/favicon.ico' %}" rel="shortcut icon" type="image/x-icon"> {% endcomment %}
+
+    <!-- jQuery (Ensure it uses the static tag) -->
+    <script src="{% static 'js/jquery-2.0.0.min.js' %}" type="text/javascript" defer></script>
+
+    <!-- Bootstrap 4 (JS and CSS linked properly) -->
+    <script src="{% static 'js/bootstrap.bundle.min.js' %}" type="text/javascript" defer></script>
+    <link href="{% static 'css/bootstrap.css' %}" rel="stylesheet" type="text/css"/>
+
+    <!-- Font Awesome -->
+    <link href="{% static 'fonts/fontawesome/css/all.min.css' %}" type="text/css" rel="stylesheet">
+
+    <!-- Custom JavaScript -->
+    <script src="{% static 'js/script.js' %}" type="text/javascript" defer></script>
+
+    <style>
+        /* Responsive styles */
+        body {
+            overflow-x: hidden;
+        }
+
+        /* Announcement Bar */
+        .announcement-bar {
+            width: 100% !important;
+            max-width: 1180px !important;
+            margin: 0 auto !important;
+            background-color: #800000;
+            color: #fff;
+            font-size: clamp(0.875rem, 2vw, 1rem);
+            font-weight: bold;
+            overflow: hidden;
+            white-space: nowrap;
+            padding: 10px 0;
+            text-align: center;
+            position: relative;
+        }
+
+        .scrolling-text {
+            display: inline-block;
+            white-space: nowrap;
+            
+            animation: scroll-left 30s linear infinite;
+        }
+
+        @keyframes scroll-left {
+            from {
+                transform: translateX(100%);
+            }
+            to {
+                transform: translateX(-100%);
+            }
+        }
+
+        /* WhatsApp Chat Button */
+        .whatsapp-container {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 1000;
+            width: clamp(40px, 8vw, 50px);
+            display: flex;
+            flex-direction: column;
+            height: auto;
+            gap: 10px;
+        }
+
+        .whatsapp-container img {
+            width: 100%;
+            height: auto;
+            transition: transform 0.3s ease;
+        }
+
+        .whatsapp-container img:hover {
+            transform: scale(1.1);
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .announcement-bar {
+                padding: 8px 0;
+            }
+
+            .whatsapp-container {
+                bottom: 10px;
+                right: 10px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .announcement-bar {
+                font-size: 0.875rem;
+                padding: 6px 0;
+            }
+        }
+    </style>
+
+</head>
+<body style="position:relative">
+
+    <!-- Announcement Bar -->
+    <div class="announcement-bar">
+        <div class="scrolling-text">
+            <span>🌩️ 50% Flat Discount  🌩️  Welcome to Our Website!🌩️ 50% Flat Discount 🌩️   Welcome to Our Website!</span>
+        </div>
+    </div>
+
+    <!-- Navbar Section -->
+    {% include "includes/navbar.html" %}
+
+    <!-- Content Block -->
+    {% block content %}
+    {% endblock %}
+
+    <!-- Footer Section -->
+    {% include "includes/footer.html" %}
+
+    <!-- WhatsApp Chat Button -->
+    <div class="whatsapp-container">
+        <a href="https://wa.me/+8801717608397?text=Hello!%20I%20need%20assistance." target="_blank">
+            <img src="{% static 'images/whatsapp-icon.png' %}" alt="WhatsApp Chat">
+        </a>
+        <a href="https://m.me/mominulislam.shourav.7/" target="_blank">
+            <img src="{% static 'images/messenger-icon.png' %}" alt="Messenger Chat">
+        </a>
+        <a href="tel:+8801717608397">
+            <img src="{% static 'images/call-icon.png' %}" alt="Call Us">
+        </a>
+    </div>
+
+    <!-- Live Chat Widget (Tawk.to) -->
+
+</body>
+</html>
+
+
+
+{% comment %} {% load static %}
+<!DOCTYPE HTML>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="cache-control" content="max-age=604800" />
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    
+    <title>One of the Biggest Online Shopping Platforms</title>
+
+    <!-- Favicon -->
+    <link href="{% static 'images/favicon.ico' %}" rel="shortcut icon" type="image/x-icon">
+
+    <!-- jQuery (Ensure it uses the static tag) -->
+    <script src="{% static 'js/jquery-2.0.0.min.js' %}" type="text/javascript" defer></script>
+
+    <!-- Bootstrap 4 (JS and CSS linked properly) -->
+    <script src="{% static 'js/bootstrap.bundle.min.js' %}" type="text/javascript" defer></script>
+    <link href="{% static 'css/bootstrap.css' %}" rel="stylesheet" type="text/css"/>
+
+    <!-- Font Awesome -->
+    <link href="{% static 'fonts/fontawesome/css/all.min.css' %}" type="text/css" rel="stylesheet">
+
+    <!-- Custom JavaScript -->
+    <script src="{% static 'js/script.js' %}" type="text/javascript" defer></script>
+
+    <style>
+        /* Responsive styles */
+        body {
+            overflow-x: hidden;
+        }
+
+        /* Announcement Bar */
+        .announcement-bar {
+            width: 100% !important;
+            max-width: 1180px !important;
+            margin: 0 auto !important;
+            background-color: #800000;
+            color: #fff;
+            font-size: clamp(0.875rem, 2vw, 1rem);
+            font-weight: bold;
+            overflow: hidden;
+            white-space: nowrap;
+            padding: 10px 0;
+            text-align: center;
+            position: relative;
+        }
+
+        .scrolling-text {
+            display: inline-block;
+            white-space: nowrap;
+            padding-left: 100%;
+            animation: scroll-left 30s linear infinite;
+        }
+
+        @keyframes scroll-left {
+            from {
+                transform: translateX(100%);
+            }
+            to {
+                transform: translateX(-100%);
+            }
+        }
+
+        /* WhatsApp Chat Button */
+        .whatsapp-container {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 1000;
+            width: clamp(40px, 8vw, 50px);
+            display: flex;
+            flex-direction: column;
+            height: auto;
+            gap: 10px;
+        }
+
+        .whatsapp-container img {
+            width: 100%;
+            height: auto;
+            transition: transform 0.3s ease;
+        }
+
+        .whatsapp-container img:hover {
+            transform: scale(1.1);
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .announcement-bar {
+                padding: 8px 0;
+            }
+
+            .whatsapp-container {
+                bottom: 10px;
+                right: 10px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .announcement-bar {
+                font-size: 0.875rem;
+                padding: 6px 0;
+            }
+        }
+    </style>
+
+</head>
+<body style="position:relative">
+
+    <!-- Announcement Bar -->
+    <div class="announcement-bar">
+        <div class="scrolling-text">
+            <span>🌩️ 50% Flat Discount 🌩️ | Welcome to Our Website! 🌩️</span>
+        </div>
+    </div>
+
+    <!-- Navbar Section -->
+    {% include "includes/navbar.html" %}
+
+    <!-- Content Block -->
+    {% block content %}
+    {% endblock %}
+
+    <!-- Footer Section -->
+    {% include "includes/footer.html" %}
+
+    <!-- WhatsApp Chat Button -->
+    <div class="whatsapp-container">
+        <a href="https://wa.me/+8801717608397?text=Hello!%20I%20need%20assistance." target="_blank">
+            <img src="{% static 'images/whatsapp-icon.png' %}" alt="WhatsApp Chat">
+        </a>
+        <a href="https://m.me/mominulislam.shourav.7/" target="_blank">
+            <img src="{% static 'images/messenger-icon.png' %}" alt="Messenger Chat">
+        </a>
+        <a href="tel:+8801717608397">
+            <img src="{% static 'images/call-icon.png' %}" alt="Call Us">
+        </a>
+    </div>
+
+    <!-- Live Chat Widget (Tawk.to) -->
+
+</body>
+</html>
+ {% endcomment %}

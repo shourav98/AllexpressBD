@@ -1,0 +1,310 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+
+<section class="section-content padding-y bg">
+<div class="container">
+    
+<div class="row">
+    <aside class="col-lg-6 col-md-12 mb-4">
+        <div class="card">
+            <div class="card-body">
+                <h4 class="card-title mb-4">Billing Address</h4>
+                <form action="{% url 'place_order' %}" method="POST">
+                    {% csrf_token %}
+                    <!-- Billing Information Fields -->
+                    <div class="form-row">
+                        <div class="col-md-6 col-sm-12 form-group">
+                            <label for="first_name">First Name</label>
+                            <input type="text" name="first_name" class="form-control" required>
+                        </div>
+                        <div class="col-md-6 col-sm-12 form-group">
+                            <label for="last_name">Last Name</label>
+                            <input type="text" name="last_name" class="form-control" required>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="col-md-6 col-sm-12 form-group">
+                            <label for="email">Email</label>
+                            <input type="email" name="email" class="form-control" required>
+                        </div>
+                        <div class="col-md-6 col-sm-12 form-group">
+                            <label for="phone">Phone Number</label>
+                            <input type="number" name="phone" class="form-control" required>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="col-md-6 col-sm-12 form-group">
+                            <label for="address_line_1">Address Line 1</label>
+                            <input type="text" name="address_line_1" class="form-control" required>
+                        </div>
+                        <div class="col-md-6 col-sm-12 form-group">
+                            <label for="address_line_2">Address Line 2</label>
+                            <input type="text" name="address_line_2" class="form-control">
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="col-md-4 col-sm-12 form-group">
+                            <label for="city">City</label>
+                            <input type="text" name="city" class="form-control" required>
+                        </div>
+                        <div class="col-md-4 col-sm-12 form-group">
+                            <label for="state">State</label>
+                            <input type="text" name="state" class="form-control" required>
+                        </div>
+                        <div class="col-md-4 col-sm-12 form-group">
+                            <label for="country">Country</label>
+                            <input type="text" name="country" class="form-control" required>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="col-12 form-group">
+                            <label for="order_note">Order Note</label>
+                            <textarea name="order_note" rows='2' class="form-control"></textarea>
+                        </div>
+                    </div>
+            </div>
+        </div>
+    </aside>
+
+    <aside class="col-lg-6 col-md-12">
+        <div class="card">
+            <div class="card-body">
+                <div class="cart-items">
+                    {% for cart_item in cart_items %}
+                    <div class="cart-item">
+                        <div class="row align-items-center no-gutters">
+                            <div class="col-2 col-sm-auto">
+                                <img src="{{ cart_item.product.images.url }}" class="img-sm">
+                            </div>
+                            <div class="col-6 col-sm">
+                                <div class="product-details pl-3">
+                                    <a href="{{ cart_item.product.get_url }}" class="title text-dark">
+                                        {{ cart_item.product.product_name }}
+                                    </a>
+                                    <p class="text-muted small mb-0">
+                                        {% if cart_item.variations.all %}
+                                            {% for item in cart_item.variations.all %}
+                                                {% if item.variation_category == 'size' %}
+                                                    Size: {{ item.variation_value | capfirst }}<br>
+                                                {% else %}
+                                                    Color: {{ item.variation_value | capfirst }}<br>
+                                                {% endif %}
+                                            {% endfor %}
+                                        {% endif %}
+                                    </p>
+                                </div>
+                            </div>
+                            <div class="col-2 col-sm-auto">
+                                <div class="quantity px-2 text-center">
+                                    <span>{{ cart_item.quantity }}</span>
+                                </div>
+                            </div>
+                            <div class="col-2 col-sm-auto">
+                                <div class="price text-right">
+                                    <var class="price h6 mb-0">{{ cart_item.sub_total }}</var>
+                                    <small class="text-muted d-block">{{ cart_item.product.price }}</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% if not forloop.last %}
+                        <hr class="my-3">
+                    {% endif %}
+                    {% endfor %}
+                </div>
+
+                <!-- Payment Method Selection -->
+                <div class="form-group mt-4">
+                    <label>Payment Method</label>
+                    <div class="payment-options">
+                        <div class="payment-option mb-2">
+                            <input type="radio" class="payment-radio" name="payment_method" id="cod" value="Cash on Delivery" required>
+                            <label class="payment-label" for="cod">
+                                <span class="payment-icon">💵</span>
+                                Cash on Delivery
+                            </label>
+                        </div>
+                        
+                        <div class="payment-option">
+                            <input type="radio" class="payment-radio" name="payment_method" id="ssl" value="SSLcommerz">
+                            <label class="payment-label" for="ssl">
+                                <span class="payment-icon">💳</span>
+                                SSLcommerz
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-dark btn-block mb-2">Place Order</button>
+                <a href="{% url 'store' %}" class="btn btn-light btn-block">Continue Shopping</a>
+                </form>
+            </div>
+        </div>
+    </aside>
+</div>
+
+</div>
+</section>
+
+<style>
+.payment-options {
+    padding: 10px 0;
+}
+
+.payment-option {
+    position: relative;
+}
+
+.payment-radio {
+    display: none;
+}
+
+.payment-label {
+    display: block;
+    padding: 15px;
+    background: #f8f9fa;
+    border: 2px solid #dee2e6;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.payment-label:hover {
+    background: #e9ecef;
+}
+
+.payment-radio:checked + .payment-label {
+    border-color: #000;
+    background: #f8f9fa;
+}
+
+.payment-icon {
+    margin-right: 10px;
+    font-size: 1.2em;
+}
+
+.cart-item {
+    padding: 1rem;
+    background: #fff;
+}
+
+.img-sm {
+    width: 80px;
+    height: 80px;
+    object-fit: cover;
+    border-radius: 4px;
+}
+
+.product-details {
+    min-width: 0;
+    padding-left: 15px;
+}
+
+.product-details .title {
+    display: block;
+    font-weight: 500;
+    margin-bottom: 0.5rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: 1rem;
+    line-height: 1.4;
+}
+
+.quantity {
+    min-width: 80px;
+    border-left: 1px solid #dee2e6;
+    border-right: 1px solid #dee2e6;
+}
+
+.price {
+    min-width: 120px;
+    padding-left: 1rem;
+}
+
+@media (max-width: 768px) {
+    .form-row {
+        margin-right: -5px;
+        margin-left: -5px;
+    }
+    
+    .form-row > [class*='col-'] {
+        padding-right: 5px;
+        padding-left: 5px;
+    }
+    
+    .img-sm {
+        width: 60px;
+        height: 60px;
+    }
+    
+    .payment-label {
+        padding: 10px;
+    }
+    
+    .quantity {
+        min-width: 50px;
+        border: none;
+        padding: 0 8px;
+    }
+    
+    .price {
+        min-width: 70px;
+        padding-left: 8px;
+    }
+
+    .product-details {
+        padding-left: 12px !important;
+        margin-bottom: 8px;
+    }
+
+    .product-details .title {
+        font-size: 0.95rem;
+        margin-bottom: 0.3rem;
+    }
+
+    .cart-item {
+        font-size: 0.95rem;
+        padding: 0.875rem;
+    }
+}
+
+@media (max-width: 576px) {
+    .cart-item {
+        padding: 0.75rem;
+    }
+
+    .img-sm {
+        width: 50px;
+        height: 50px;
+    }
+
+    .product-details {
+        padding-left: 10px !important;
+    }
+
+    .product-details .title {
+        font-size: 0.875rem;
+        line-height: 1.3;
+    }
+
+    .quantity {
+        min-width: 40px;
+        padding: 0 5px;
+    }
+
+    .price {
+        min-width: 60px;
+        padding-left: 5px;
+        font-size: 0.875rem;
+    }
+}
+</style>
+
+{% endblock %}

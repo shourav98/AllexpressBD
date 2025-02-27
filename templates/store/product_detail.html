@@ -1,0 +1,530 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<style>
+    /* Authentic Product Page Styling */
+    .product-container {
+        max-width: 1400px;
+        margin: 0 auto;
+        padding: 2rem 1rem;
+    }
+
+    /* Gallery */
+    .gallery-section {
+        background: #f9f9f9;
+        border-radius: 20px;
+        padding: 1rem;
+    }
+
+    .main-image {
+        position: relative;
+        margin-bottom: 1rem;
+    }
+
+    .main-image img {
+        width: 100%;
+        height: auto;
+        max-height: 600px;
+        object-fit: cover;
+        border-radius: 12px;
+    }
+
+    .gallery-thumbs {
+        max-height: 100px;
+        display: flex;
+        gap: 0.5rem;
+    }
+
+    .thumb {
+        aspect-ratio: 1;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        border: 2px solid transparent;
+        border-radius: 8px;
+        overflow: hidden;
+    }
+
+    .thumb.active {
+        border-color: #222;
+    }
+
+    .thumb img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;    
+    }
+
+    /* Product Info */
+    .product-info {
+        padding: 1rem;
+    }
+
+    .product-brand {
+        text-transform: uppercase;
+        letter-spacing: 2px;
+        font-size: clamp(0.8rem, 2vw, 0.9rem);
+        color: #666;
+        margin-bottom: 0.5rem;
+    }
+
+    .product-name {
+        font-size: clamp(1.5rem, 4vw, 2.5rem);
+        font-weight: 500;
+        margin-bottom: 1rem;
+        color: #111;
+    }
+
+    .product-price {
+        font-size: clamp(1.5rem, 2vw, 1.5rem);
+        font-weight: 100;
+        color: red;
+        margin-bottom: 1.5rem;
+    }
+
+    .original-price {
+        text-decoration: line-through;
+        color: #999;
+        margin-left: 0.5rem;
+    }
+
+    .product-description {
+        font-size: clamp(0.9rem, 2vw, 1.1rem);
+        line-height: 1.6;
+        color: #444;
+        margin-bottom: 1.5rem;
+    }
+
+    /* Options */
+    .option-group {
+        margin-bottom: 1.5rem;
+    }
+
+    .option-label {
+        font-size: clamp(0.8rem, 2vw, 0.9rem);
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        margin-bottom: 0.5rem;
+        color: #666;
+    }
+
+    .color-options,
+    .size-options {
+        display: flex;
+        gap: 0.5rem;
+        flex-wrap: wrap;
+    }
+
+    .option-item {
+        min-width: 40px;
+        height: 40px;
+        border: 1px solid #ddd;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        position: relative;
+    }
+
+    @media (min-width: 768px) {
+        .option-item {
+            min-width: 50px;
+            height: 50px;
+        }
+    }
+
+    .option-item input {
+        position: absolute;
+        opacity: 0;
+    }
+
+    .option-item span {
+        font-size: clamp(0.8rem, 2vw, 0.9rem);
+        text-transform: uppercase;
+    }
+
+    .option-item:hover {
+        border-color: #111;
+    }
+
+    .option-item input:checked + span {
+        background: #111;
+        color: white;
+        width: 100%;
+        height: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    /* Add to Cart */
+    .add-to-cart {
+        width: 100%;
+        padding: 1rem;
+        background: #111;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        font-size: clamp(0.9rem, 2vw, 1rem);
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .add-to-cart:hover {
+        background: #333;
+    }
+
+    .add-to-cart:disabled {
+        background: #ddd;
+        cursor: not-allowed;
+    }
+
+    /* Reviews */
+    .reviews-section {
+        margin-top: 3rem;
+        padding: 1rem;
+        background: #f9f9f9;
+        border-radius: 12px;
+    }
+
+    .review-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1.5rem;
+        flex-wrap: wrap;
+        gap: 1rem;
+    }
+
+    .review-card {
+        background: white;
+        padding: 1rem;
+        border-radius: 8px;
+        margin-bottom: 1rem;
+    }
+
+    .review-meta {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 0.5rem;
+        font-size: clamp(0.8rem, 2vw, 0.9rem);
+        color: #666;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+    }
+
+    .review-content {
+        line-height: 1.6;
+        font-size: clamp(0.9rem, 2vw, 1rem);
+    }
+
+    /* Related Products */
+    .related-products {
+        margin-top: 3rem;
+    }
+
+    .related-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1.5rem;
+    }
+
+    .related-header h3 {
+        font-size: 1.5rem;
+        font-weight: 600;
+        color: #333;
+    }
+
+    .related-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+        gap: 1.5rem;
+    }
+
+    .related-item {
+        background: white;
+        border-radius: 10px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+        transition: transform 0.3s ease;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .related-item:hover {
+        transform: translateY(-5px);
+    }
+
+    .related-image {
+        position: relative;
+        padding-top: 100%;
+        overflow: hidden;
+    }
+
+    .related-image img {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.3s ease;
+    }
+
+    .related-item:hover .related-image img {
+        transform: scale(1.05);
+    }
+
+    .related-info {
+        padding: 1rem;
+    }
+
+    .related-name {
+        font-size: 1rem;
+        font-weight: 500;
+        color: #333;
+        margin-bottom: 0.5rem;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+        height: 2.4em;
+    }
+
+    .related-price {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .current-price {
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: #e41e31;
+    }
+
+    .original-price {
+        font-size: 0.9rem;
+        color: #999;
+        text-decoration: line-through;
+    }
+
+    .discount-badge {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        background: #e41e31;
+        color: white;
+        padding: 0.25rem 0.5rem;
+        border-radius: 4px;
+        font-weight: 500;
+        font-size: 0.775rem;
+        z-index: 1;
+    }
+
+    @media (max-width: 768px) {
+        .container {
+            padding: 0.5rem;
+        }
+        
+        .product-info {
+            margin-top: 1rem;
+        }
+    }
+</style>
+
+<div class="container">
+    <div class="row">
+        <!-- Gallery Section -->
+        <div class="col-lg-7">
+            <div class="gallery-section">
+                <div class="main-image">
+                    <img src="{{ single_product.images.url }}" id="mainImg" alt="{{ single_product.product_name }}">
+                    {% if single_product.discounted_price %}
+                        <span class="discount-badge">50% OFF</span>
+                    {% endif %}
+                </div>
+                <div class="gallery-thumbs">
+                    <div class="thumb active">
+                        <img src="{{ single_product.images.url }}" onclick="changeImage(this)" alt="Thumbnail">
+                    </div>
+                    {% for image in product_gallery %}
+                        <div class="thumb">
+                            <img src="{{ image.image.url }}" onclick="changeImage(this)" alt="Thumbnail">
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Product Info -->
+        <div class="col-lg-5">
+            <div class="product-info">
+                <form action="{% url 'add_cart' single_product.id %}" method="POST">
+                    {% csrf_token %}
+                    <div class="product-brand">{{ single_product.category }}</div>
+                    <h1 class="product-name">{{ single_product.product_name }}</h1>
+                    
+                    <div class="product-price">
+                        {% if single_product.discounted_price %}
+                        TK {{ single_product.discounted_price }}
+                            <span class="original-price">TK {{ single_product.price }}</span>
+                        {% else %}
+                        TK {{ single_product.price }}
+                        {% endif %}
+                    </div>
+                    <p class="text-muted font-weight-light mb-3">{{ single_product.discription|default:"No description available"}}</p>
+
+                    <div class="option-group">
+                        <div class="option-label">Color</div>
+                        <div class="color-options">
+                            {% for color in single_product.variation_set.colors %}
+                            <label class="option-item">
+                                <input type="radio" name="radio_color" value="{{ color.variation_value|lower }}" required>
+                                <span>{{ color.variation_value|capfirst}}</span>
+                            </label>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <div class="option-group">
+                        <div class="option-label">Size</div>
+                        <div class="size-options">
+                            {% for size in single_product.variation_set.sizes %}
+                            <label class="option-item">
+                                <input type="radio" name="radio_size" value="{{ size.variation_value|lower }}" required>
+                                <span>{{ size.variation_value }}</span>
+                            </label>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    {% if single_product.stock <= 0 %}
+                        <button class="add-to-cart" disabled>Out of Stock</button>
+                    {% else %}
+                        <button type="submit" class="add-to-cart">
+                            Add to Cart
+                        </button>
+                    {% endif %}
+                </form>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- Related Products -->
+    <div class="related-products">
+        <div class="related-header">
+            <h3>You May Also Like</h3>
+            <a href="{% url 'store' %}" class="btn btn-outline-dark">View All</a>
+        </div>
+
+        <div class="related-grid">
+            {% for product in categories %}
+            <a href="{{ product.get_url }}" class="text-decoration-none">
+                <div class="related-item">
+                    <div class="main-image">
+                        <img src="{{ product.images.url }}" id="mainImg" alt="{{ product.product_name }}">
+                        {% if single_product.discounted_price %}
+                        <span class="discount-badge">50% OFF</span>
+                        {% endif %}
+                    </div>
+                    <div class="related-info">
+                        <h4 class="related-name">{{ product.product_name }}</h4>
+                        <div class="product-price">
+                            {% if single_product.discounted_price %}
+                            TK {{ single_product.discounted_price }}
+                                <span class="original-price">TK {{ single_product.price }}</span>
+                            {% else %}
+                            TK {{ single_product.price }}
+                            {% endif %}
+                        </div>
+                        
+                        {% comment %} <div class="related-price">
+                            {% if product.discounted_price %}
+                                <span class="current-price">TK {{ product.discounted_price }}</span>
+                                <span class="original-price">TK {{ product.price }}</span>
+                            {% else %}
+                                <span class="current-price">TK {{ product.price }}</span>
+                            {% endif %}
+                        </div> {% endcomment %}
+                    </div>
+                </div>
+            </a>
+            {% endfor %}
+        </div>
+    </div>
+    <!-- Reviews Section -->
+    <!-- Customer Reviews Section -->
+<div class="row mt-4">
+    <div class="col-md-9">
+        <form action="{% url 'submit_review' single_product.id %}" method="POST">
+            {% csrf_token %}
+            <h4>Write Your Review</h4>
+            <div class="form-group">
+                <label>Rating</label>
+                <div class="rate">
+                    {% for i in "54321" %}
+                    <input type="radio" name="rating" id="rating{{ i }}" value="{{ i }}" required>
+                    <label for="rating{{ i }}" title="{{ i }} stars"></label>
+                    {% endfor %}
+                </div>
+                <input type="text" name="subject" placeholder="Review Title" class="form-control mt-2">
+                <textarea name="review" rows="4" placeholder="Your review" class="form-control mt-2"></textarea>
+                <br>
+                {% if user.is_authenticated %}
+                    {% if orderproduct %}
+                        <button type="submit" class="btn btn-primary">Submit Review</button>
+                    {% else %}
+                        <p>You must purchase this product to post a review.</p>
+                    {% endif %}
+                {% else %}
+                    <p>You must be logged in to post a review. <a href="{% url 'login' %}">Login Now</a></p>
+                {% endif %}
+            </div>
+        </form>
+
+        <br>
+        <header class="section-heading">
+            <h3>Customer Reviews</h3>
+            <div class="rating-star">
+                {% for i in "12345" %}
+                <i class="fa fa-star{% if single_product.averageReview < forloop.counter %}-o{% elif single_product.averageReview < forloop.counter %}-half-o{% endif %}"></i>
+                {% endfor %}
+                <span>{{ single_product.countReview }} Reviews</span>
+            </div>
+        </header>
+        {% for review in reviews %}
+        <article class="box mb-3">
+            <div class="icontext w-100">
+                <div class="text">
+                    <h6>{{ review.user.first_name }}</h6>
+                    <span class="date text-muted">{{ review.updated_at|date:"M d, Y" }}</span>
+                    <p class="mb-2">{{ review.subject }}</p>
+                    <p>{{ review.review }}</p>
+                </div>
+            </div>
+        </article>
+        {% empty %}
+            <p>No reviews yet.</p>
+        {% endfor %}
+    </div>
+
+    
+</div>
+
+
+<script>
+function changeImage(element) {
+    document.getElementById('mainImg').src = element.src;
+    document.querySelectorAll('.thumb').forEach(thumb => {
+        thumb.classList.remove('active');
+    });
+    element.parentElement.classList.add('active');
+}
+</script>
+
+{% endblock %}

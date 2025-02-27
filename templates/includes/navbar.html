@@ -1,0 +1,304 @@
+{% load static %}
+<!-- Header section -->
+<header>
+    <div class="container">
+        <!-- Top navigation bar -->
+        <nav class="navbar navbar-light bg-white border-bottom">
+            <div class="container">
+                <!-- Logo -->
+                <a href="{% url 'home' %}" class="navbar-brand">
+                    <img src="{% static './images/e_com.png' %}" alt="Logo" class="logo">
+                </a>
+
+                <!-- Search form -->
+                <form action="{% url 'search' %}" class="search-form d-none d-md-block" method="GET">
+                    <div class="search-wrapper">
+                        <input type="text" 
+                               class="search-input" 
+                               placeholder="Search for products, brands and more..." 
+                               name="keyword"
+                               autocomplete="off">
+                        <button type="submit" class="search-icon">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+                </form>
+
+            
+
+                <!-- User account and cart -->
+                <ul class="navbar-nav flex-row align-items-center">
+                    <li class="nav-item d-md-none" style="display: block; margin-right: 1rem; position: relative;">
+                        <a href="#" class="nav-link" onclick="toggleMobileSearch(event)" style="text-decoration: none; color: inherit;">
+                            <i class="fa fa-search"></i>
+                        </a>
+                        <form action="{% url 'search' %}" style="display: none; position: absolute; top: 100%; transform: translateX(-80%); margin-top: 0.5rem; width: 300px; z-index: 1000;" method="GET">
+                            <div style="position: relative; width: 100%;">
+                                <input type="text" 
+                                       style="width: 100%; padding: 0.5rem 2rem 0.5rem 1rem; border: 1px solid #ddd; border-radius: 4px; outline: none;"
+                                       placeholder="Search for products..." 
+                                       name="keyword"
+                                       autocomplete="off">
+                                <button type="submit" style="position: absolute; right: 0.5rem; top: 50%; transform: translateY(-50%); border: none; background: none; cursor: pointer;">
+                                    <i class="fa fa-search"></i>
+                                </button>
+                            </div>
+                        </form>
+                        <script>
+                            function toggleMobileSearch(e) {
+                                e.preventDefault();
+                                const form = e.currentTarget.nextElementSibling;
+                                form.style.display = form.style.display === 'none' ? 'block' : 'none';
+                                if (form.style.display === 'block') {
+                                    form.querySelector('input').focus();
+                                }
+                            }
+                        </script>
+                    </li>
+                    <li class="nav-item me-3">
+                        {% if user.id is none %}
+                            <div class="user-menu">
+                                <a href="{% url 'login' %}" class="auth-link">Sign in / Register</a>
+                            </div>
+                        {% else %}
+                            <a class="nav-link user-link" href="{% url 'dashboard' %}">
+                                <div class="user-avatar">
+                                    <i class="fa fa-user"></i>
+                                </div>
+                                <div class="user-info">
+                                    <span class="user-name">{{ user.first_name }}</span>
+                                </div>
+                            </a>
+                        {% endif %}
+                    </li>
+                    <li class="nav-item">
+                        <a href="{% url 'cart' %}" class="nav-link cart-link">
+                            <div class="cart-container">
+                                <div class="cart-icon">
+                                    <i class="fa fa-shopping-bag"></i>
+                                    {% if cart_count > 0 %}
+                                        <span class="cart-badge">{{ cart_count }}</span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </nav>
+
+        <!-- Categories bar -->
+        <div class="categories-bar">
+            <div class="container">
+                <div class="categories-wrapper d-flex justify-content-center">
+                    <a href="{% url 'store' %}" class="category-item">All Products</a>
+                    {% for category in links %}
+                        <a href="{{ category.get_url }}" class="category-item  ">{{ category.category_name }}</a>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <style>
+            /* Navbar styles */
+            .navbar {
+                padding: 1rem 0;
+                box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+                
+            }
+
+            .navbar.fixed {
+                position: fixed;
+                top: 0;
+                left: 0;
+                right: 0;
+                z-index: 1000;
+                background: white;
+            }
+
+            .navbar-brand img {
+            
+                height: 40px;
+                
+            }
+
+            /* Search form styles */
+            .search-form {
+                flex-grow: 1;
+                max-width: 600px;
+                margin: 0 2rem;
+            }
+
+            .search-wrapper {
+                display: flex;
+                align-items: center;
+                background: #f8f9fa;
+                border-radius: 50px;
+                padding: 0.5rem 1rem;
+                transition: all 0.3s ease;
+                border: 2px solid transparent;
+            }
+
+            .search-wrapper:focus-within {
+                background: #fff;
+                border-color: #6c5ce7;
+                box-shadow: 0 0 0 4px rgba(108, 92, 231, 0.1);
+            }
+
+            .search-input {
+                border: none;
+                background: transparent;
+                padding: 0.5rem 0;
+                width: 100%;
+                outline: none;
+                font-size: 0.95rem;
+            }
+
+            .search-icon {
+                color: #6c757d;
+                background: none;
+                border: none;
+                padding: 0.5rem;
+                cursor: pointer;
+            }
+
+            /* User menu styles */
+            .user-menu {
+                display: flex;
+                align-items: center;
+            }
+
+            .auth-link {
+                color: #333;
+                text-decoration: none;
+                font-weight: 500;
+                padding: 0.5rem 1rem;
+                border-radius: 4px;
+                background: #f0f0f0;
+                transition: all 0.3s ease;
+            }
+
+            .user-link {
+                display: flex;
+                align-items: center;
+                gap: 0.5rem;
+                padding: 0.5rem;
+            }
+
+            .user-avatar {
+                width: 35px;
+                height: 35px;
+                border-radius: 50%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                color: #6c5ce7;
+            }
+
+            /* Cart styles */
+            .cart-icon {
+                position: relative;
+                width: 35px;
+                height: 35px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                color: #ff6b6b;
+            }
+
+            .cart-badge {
+                position: absolute;
+                top: -5px;
+                right: -5px;
+                background: #2ecc71;
+                color: white;
+                font-size: 0.7rem;
+                min-width: 18px;
+                height: 18px;
+                border-radius: 50%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                border: 2px solid white;
+            }
+
+            /* Categories styles */
+            .categories-bar {
+                
+                padding: 0.5rem 0;
+                overflow-x: auto;
+                white-space: nowrap;
+                -webkit-overflow-scrolling: touch;
+            }
+
+            .categories-wrapper {
+                display: flex;
+                gap: 1rem;
+                padding: 0.5rem 0;
+            }
+
+            .category-item {
+                color: black;
+                font-size: 1.2rem;
+                font-weight: bold;
+                text-decoration: none;
+                padding: 0.5rem 1rem;
+                border-radius: 4px;
+                transition: all 0.3s ease;
+            }
+
+            .category-item:hover {
+                color:orange;
+                
+                
+                
+            }
+
+            /* Responsive styles */
+            @media (max-width: 768px) {
+                .navbar-brand img {
+                    height: 30px;
+                }
+
+                .search-form {
+                    margin: 0 1rem;
+                }
+
+                .user-info {
+                    display: none;
+                }
+
+                .auth-link {
+                    padding: 0.4rem 0.8rem;
+                    font-size: 0.9rem;
+                }
+            }
+
+            @media (max-width: 576px) {
+                .search-form {
+                    margin: 0 0.5rem;
+                }
+
+                .search-input::placeholder {
+                    font-size: 0.8rem;
+                }
+
+                .category-item {
+                    padding: 0.3rem 0.6rem;
+                    font-size: 0.85rem;
+                }
+            }
+        </style>
+
+        <script>
+            window.addEventListener('scroll', function() {
+                const navbar = document.querySelector('.navbar');
+                if (window.scrollY > 20) {
+                    navbar.classList.add('fixed');
+                } else {
+                    navbar.classList.remove('fixed');
+                }
+            });
+        </script>
+    </div>
+</header>

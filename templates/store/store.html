@@ -1,0 +1,403 @@
+{% extends "base.html" %}
+{% load static %}
+{% block content %}
+<style>
+    /* Modern Store Layout */
+
+
+    /* Header Section */
+    .store-header {
+        background: linear-gradient(to right, #f8f9fa, #e9ecef);
+        padding: 1.5rem 0;
+        text-align: center;
+        margin-bottom: 2rem;
+        border-radius: 12px;
+    }
+
+    .store-header h1 {
+        font-size: clamp(2rem, 4vw, 3rem);
+        color: #333;
+        margin: 0;
+    }
+
+    /* Filters Sidebar */
+    .filters-sidebar {
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 2px 15px rgba(0,0,0,0.05);
+        padding: 1.5rem;
+        height: fit-content;
+    }
+
+    .filter-section {
+        margin-bottom: 2rem;
+    }
+
+    .filter-title {
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: #333;
+        margin-bottom: 1rem;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        cursor: pointer;
+    }
+
+    .filter-content {
+        margin-top: 1rem;
+    }
+
+    /* Category Links */
+    .category-list {
+        list-style: none;
+        padding: 0;
+    }
+
+    .category-list li {
+        margin-bottom: 0.5rem;
+    }
+
+    .category-list a {
+        color: #666;
+        text-decoration: none;
+        transition: color 0.3s;
+        display: block;
+        padding: 0.5rem;
+        border-radius: 6px;
+    }
+
+    .category-list a:hover {
+        color: #333;
+        background: #f8f9fa;
+    }
+
+    /* Size Filters */
+    .size-options {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(60px, 1fr));
+        gap: 0.5rem;
+    }
+
+    .size-option {
+        padding: 0.5rem;
+        text-align: center;
+        border: 1px solid #ddd;
+        border-radius: 6px;
+        cursor: pointer;
+        transition: all 0.3s;
+    }
+
+    .size-option:hover {
+        background: #f8f9fa;
+        border-color: #333;
+    }
+
+    .size-option.active {
+        background: #333;
+        color: white;
+        border-color: #333;
+    }
+
+    /* Price Range */
+    .price-range {
+        padding: 1rem 0;
+    }
+
+    .price-inputs {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1rem;
+    }
+
+    .price-input {
+        width: 100%;
+        padding: 0.5rem;
+        border: 1px solid #ddd;
+        border-radius: 6px;
+    }
+
+    /* Products Grid */
+    .products-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+        gap: 2rem;
+    }
+
+    .product-card {
+        background: white;
+        border-radius: 12px;
+        overflow: hidden;
+        transition: transform 0.3s;
+        box-shadow: 0 2px 15px rgba(0,0,0,0.05);
+    }
+
+    .product-card:hover {
+        transform: translateY(-5px);
+    }
+
+    .product-image {
+        position: relative;
+        aspect-ratio: 1;
+    }
+
+    .product-image img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .discount-badge {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        background: #e41e31;
+        color: white;
+        padding: 0.25rem 0.5rem;
+        border-radius: 4px;
+        font-weight: 500;
+        font-size: 0.875rem;
+        z-index: 1;
+    }
+
+    .product-details {
+        padding: 1.5rem;
+    }
+
+    .product-title {
+        font-size: 1.1rem;
+        color: #333;
+        margin-bottom: 0.5rem;
+    }
+
+    .product-price {
+        font-size: 1.2rem;
+        font-weight: 600;
+        color: #333;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .discounted-price {
+        color: #e53e3e;
+    }
+
+    .original-price {
+        font-size: 0.9rem;
+        color: #666;
+        text-decoration: line-through;
+    }
+
+    .product-actions {
+        margin-top: 1rem;
+    }
+
+    .view-details-btn {
+        
+        width: 100%;
+        padding: 0.8rem;
+        background: #333;
+        color: white;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        transition: background 0.3s;
+    }
+
+    .view-details-btn:hover {
+        background: #444;
+        text-decoration: none;
+        color: orange;
+    }
+
+    /* Pagination */
+    .pagination {
+        display: flex;
+        justify-content: center;
+        gap: 0.5rem;
+        margin-top: 3rem;
+    }
+
+    .page-link {
+        padding: 0.5rem 1rem;
+        border: 1px solid #ddd;
+        border-radius: 6px;
+        color: #333;
+        text-decoration: none;
+        transition: all 0.3s;
+    }
+
+    .page-link:hover {
+        background: #f8f9fa;
+        border-color: #333;
+    }
+
+    .page-link.active {
+        background: #333;
+        color: white;
+        border-color: #333;
+    }
+
+    /* Responsive Design */
+    @media (max-width: 768px) {
+        .store-container {
+            padding: 1rem;
+        }
+
+        .filters-sidebar {
+            margin-bottom: 2rem;
+        }
+
+        .products-grid {
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 1rem;
+        }
+    }
+</style>
+
+<div class=" container">
+    <header class="store-header ">
+        {% if 'search' in request.path %}
+            <h1>Search Results</h1>
+        {% else %}
+            <h1>Our Collection</h1>
+        {% endif %}
+    </header>
+
+    <div class="row">
+        <!-- Filters Sidebar -->
+        <div class="col-md-3">
+            <div class="filters-sidebar">
+                <!-- Categories -->
+                <div class="filter-section">
+                    <div class="filter-title">
+                        Categories
+                        <i class="fas fa-chevron-down"></i>
+                    </div>
+                    <div class="filter-content">
+                        <ul class="category-list">
+                            <li><a href="{% url 'store' %}">All Products</a></li>
+                            {% for category in links %}
+                                <li><a href="{{ category.get_url }}">{{ category.category_name }}</a></li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                </div>
+
+                {% comment %} <!-- Sizes -->
+                <div class="filter-section">
+                    <div class="filter-title">
+                        Sizes
+                        <i class="fas fa-chevron-down"></i>
+                    </div>
+                    <div class="filter-content">
+                        <div class="size-options">
+                            <div class="size-option">XS</div>
+                            <div class="size-option">S</div>
+                            <div class="size-option">M</div>
+                            <div class="size-option">L</div>
+                            <div class="size-option">XL</div>
+                            <div class="size-option">XXL</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Price Range -->
+                <div class="filter-section">
+                    <div class="filter-title">
+                        Price Range
+                        <i class="fas fa-chevron-down"></i>
+                    </div>
+                    <div class="filter-content">
+                        <form method="get" action="{% url 'store' %}">
+                            <div class="price-range">
+                                <div class="price-inputs">
+                                    <select class="price-input" name="price_min">
+                                        <option value="0">$0</option>
+                                        <option value="50">$50</option>
+                                        <option value="100">$100</option>
+                                        <option value="200">$200</option>
+                                        <option value="500">$500</option>
+                                    </select>
+                                    <select class="price-input" name="price_max">
+                                        <option value="100">$100</option>
+                                        <option value="200">$200</option>
+                                        <option value="500">$500</option>
+                                        <option value="1000">$1000</option>
+                                        <option value="2000">$2000+</option>
+                                    </select>
+                                </div>
+                                <button type="submit" class="view-details-btn" style="margin-top: 1rem;">Apply Filter</button>
+                            </div>
+                        </form>
+                    </div>
+                </div> {% endcomment %}
+            </div>
+        </div>
+
+        <!-- Products Grid -->
+        <div class="col-md-9">
+            <p class="mb-4">{{ product_count }} Products Found</p>
+            
+            <div class="products-grid">
+                {% if products %}
+                    {% for product in products %}
+                        <div class="product-card">
+                            <div class="product-image">
+                                <a href="{{ product.get_url }}">
+                                    <img src="{{ product.images.url }}" alt="{{ product.product_name }}">
+                                    {% if product.discounted_price %}
+                                        <span class="discount-badge">-50%</span>
+                                    {% endif %}
+                                </a>
+                            </div>
+                            <div class="product-details">
+                                <h3 class="product-title">{{ product.product_name }}</h3>
+                                <div class="product-price">
+                                    {% if product.discounted_price %}
+                                        <span class="discounted-price">${{ product.discounted_price }}</span>
+                                        <span class="original-price">${{ product.price }}</span>
+                                    {% else %}
+                                        <span>${{ product.price }}</span>
+                                    {% endif %}
+                                </div>
+                                <div class="product-actions">
+                                    <a href="{{ product.get_url }}" class="view-details-btn">View Details</a>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="col-12 text-center">
+                        <h4>No products found. Please try different filters.</h4>
+                    </div>
+                {% endif %}
+            </div>
+
+            <!-- Pagination -->
+            {% if products.has_other_pages %}
+                <div class="pagination">
+                    {% if products.has_previous %}
+                        <a href="?page={{ products.previous_page_number }}" class="page-link">Previous</a>
+                    {% endif %}
+
+                    {% for i in products.paginator.page_range %}
+                        {% if products.number == i %}
+                            <a href="#" class="page-link active">{{ i }}</a>
+                        {% else %}
+                            <a href="?page={{ i }}" class="page-link">{{ i }}</a>
+                        {% endif %}
+                    {% endfor %}
+
+                    {% if products.has_next %}
+                        <a href="?page={{ products.next_page_number }}" class="page-link">Next</a>
+                    {% endif %}
+                </div>
+            {% endif %}
+            <br>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

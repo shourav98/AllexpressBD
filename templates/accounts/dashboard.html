@@ -1,0 +1,54 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<section class="section-conten padding-y bg">
+
+    {% include 'includes/alerts.html' %}
+
+    <div class="container">
+        <div class="row">
+        {% include 'includes/dashboard_sidebar.html' %}
+        
+        <main class="col-md-9">
+            <article class="card">
+            <header class="card-header">
+                <strong class="d-inline-block mr-3">Logged in as:</strong>
+                <span>{{ user.first_name }}</span>
+            </header>
+            <div class="card-body">
+                <div class="row"> 
+                    <div class="col-md-6">
+                        <div class="card" style="text-align:center;">
+                            <div class="card-body">
+                                <h5 class="card-title">Total Orders</h5>
+                                <h4>{{ orders_count }}</h4>
+                                <a href="{% url 'my_orders' %}">View Orders</a>
+                            </div>
+                        </div>
+                    </div> <!-- row.// -->
+                    <div class="col-md-6">
+                        <div class="card" style="text-align:center;">
+                            <div class="card-body">
+                                {% if userprofile.profile_picture %}
+                                    <img src="{{ userprofile.profile_picture.url }}" alt="User profile picture" width="50" height="50" style="border-radius:50%;">
+                                {% else %}
+                                <img src="https://www.w3schools.com/howto/img_avatar.png" class="avatar" alt="Default profile picture" width="50" height="50" style="border-radius:50%;">
+                                {% endif %}
+                                <p>{{ user.full_name }}</p>
+                            </div>
+                        </div>
+                    </div>
+                <!-- row.// -->
+            </div> <!-- card-body .// -->
+            
+            </article> <!-- order-group.// --> 
+        </main>
+    </div> <!-- row.// -->
+    </div>
+    
+</section>
+
+{% endblock %}
+
+
