@@ -2,7 +2,7 @@ media/*.log  # Ignore only log files in media
 media/temp/  # Ignore temp folder in media
 
 form.txt
-# db.sqlite3
+db.sqlite3
 credentials.txt
 ecom/
 # Byte-compiled / optimized / DLL files
