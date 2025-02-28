@@ -21,6 +21,9 @@ from django.contrib.auth.tokens import default_token_generator
 from django.core.mail import EmailMessage  
 
 # Create your views here.
+from django.contrib.auth import get_user_model
+from django.db.utils import IntegrityError
+
 def register(request):
     if request.method == 'POST':
         form = RegistrationForm(request.POST)
@@ -30,32 +33,88 @@ def register(request):
             phone_number = form.cleaned_data['phone_number']
             email = form.cleaned_data['email']
             password = form.cleaned_data['password']
-            username = email.split('@')[0]
-            user = Account.objects.create_user(first_name=first_name, last_name=last_name, email=email, username=username, password=password)
-            user.phone_number = phone_number
-            user.save()
+            
+            username = email.split('@')[0]  # Generate username from email
 
-            # Send verification email
-            current_site = get_current_site(request)
-            mail_subject = "Please activate your account"
-            message = render_to_string('accounts/activate_verification_mail.html', {
-                'user': user,
-                'domain': current_site,
-                'uid': urlsafe_base64_encode(force_bytes(user.pk)),
-                'token': default_token_generator.make_token(user),
-            })
-            to_email = email
-            send_email = EmailMessage(mail_subject, message, to=[to_email])
-            send_email.send()
-            messages.success(request, 'Registration successful!')
-            return redirect('register')
+            # Check if the username already exists
+            User = get_user_model()  # Get the custom user model
+            if User.objects.filter(username=username).exists():
+                messages.error(request, 'Username already taken. Try another email.')
+                return redirect('register')
+
+            try:
+                # Create and save user
+                user = User.objects.create_user(
+                    first_name=first_name, 
+                    last_name=last_name, 
+                    email=email, 
+                    username=username, 
+                    password=password
+                )
+                user.phone_number = phone_number
+                user.save()
+
+                # Send verification email (if needed)
+                current_site = get_current_site(request)
+                mail_subject = "Please activate your account"
+                message = render_to_string('accounts/activate_verification_mail.html', {
+                    'user': user,
+                    'domain': current_site,
+                    'uid': urlsafe_base64_encode(force_bytes(user.pk)),
+                    'token': default_token_generator.make_token(user),
+                })
+                send_email = EmailMessage(mail_subject, message, to=[email])
+                send_email.send()
+
+                messages.success(request, 'Registration successful!')
+                return redirect('register')
+
+            except IntegrityError:
+                messages.error(request, 'An account with this email already exists.')
+                return redirect('register')
 
     else:
         form = RegistrationForm()
-    context = {
-        'form': form,
-    }
-    return render(request, 'accounts/register.html', context)
+    return render(request, 'accounts/register.html', {'form': form})
+
+
+
+
+# def register(request):
+#     if request.method == 'POST':
+#         form = RegistrationForm(request.POST)
+#         if form.is_valid():
+#             first_name = form.cleaned_data['first_name']
+#             last_name = form.cleaned_data['last_name']
+#             phone_number = form.cleaned_data['phone_number']
+#             email = form.cleaned_data['email']
+#             password = form.cleaned_data['password']
+#             username = email.split('@')[0]
+#             user = Account.objects.create_user(first_name=first_name, last_name=last_name, email=email, username=username, password=password)
+#             user.phone_number = phone_number
+#             user.save()
+
+#             # Send verification email
+#             current_site = get_current_site(request)
+#             mail_subject = "Please activate your account"
+#             message = render_to_string('accounts/activate_verification_mail.html', {
+#                 'user': user,
+#                 'domain': current_site,
+#                 'uid': urlsafe_base64_encode(force_bytes(user.pk)),
+#                 'token': default_token_generator.make_token(user),
+#             })
+#             to_email = email
+#             send_email = EmailMessage(mail_subject, message, to=[to_email])
+#             send_email.send()
+#             messages.success(request, 'Registration successful!')
+#             return redirect('register')
+
+#     else:
+#         form = RegistrationForm()
+#     context = {
+#         'form': form,
+#     }
+#     return render(request, 'accounts/register.html', context)
 
 
 

@@ -206,10 +206,10 @@
         margin-bottom: 1.5rem;
     }
 
-    .payment-methods img {
+    /* .payment-methods img {
         max-width: 240px;
         opacity: 0.8;
-    }
+    } */
 
     @media (max-width: 991px) {
         .cart-summary {
@@ -259,9 +259,9 @@
             padding: 0 0.5rem;
         }
 
-        .payment-methods img {
+        /* .payment-methods img {
             max-width: 200px;
-        }
+        } */
     }
 
     @media (max-width: 480px) {
@@ -299,9 +299,9 @@
             font-size: 0.8rem;
         }
 
-        .payment-methods img {
+        /* .payment-methods img {
             max-width: 180px;
-        }
+        } */
 
         .quantity-input {
             width: 40px;
@@ -397,9 +397,9 @@
                         <span>${{ grand_total }}</span>
                     </div>
                     <div class="action-buttons">
-                        <div class="payment-methods">
+                        <!-- <div class="payment-methods">
                             <img src="{% static './images/misc/payments.png' %}" alt="Payment methods">
-                        </div>
+                        </div> -->
                         <a href="{% url 'checkout' %}" class="checkout-btn">
                             <i class="fa fa-lock"></i>
                             Proceed to Checkout
