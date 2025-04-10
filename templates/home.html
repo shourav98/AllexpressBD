@@ -372,6 +372,51 @@
 </section>
 <!-- ========================= SECTION  END// ========================= -->
 
+
+
+<!-- NEW BEST SELLER PRODUCTS SECTION -->
+<section class="section-name padding-y-sm">
+    <div class="container">
+        <header class="section-heading">
+        <h3 class="section-title popular-title">Best Seller Products</h3>
+        </header>
+    
+        <div class="row">
+        {% for product in best_sellers %}
+        <div class="col-md-3 mb-4">
+            <div class="card shadow-sm border rounded h-100">
+                <a href="{{ product.get_url }}" class="img-wrap">
+                    <img src="{{ product.images.url }}" class="card-img-top img-fluid" alt="{{ product.product_name }}">
+                </a>
+                <div class="card-body text-center">
+                    <h5 class="card-title mb-2">
+                        <a href="{{ product.get_url }}" class="text-dark text-decoration-none">{{ product.product_name }}</a>
+                    </h5>
+                    <span class="discount-badge">-50%</span>
+                    <div class="product-price">
+                        {% if product.discounted_price %}
+                            TK {{ product.discounted_price }}
+                            <span class="original-price">TK {{ product.price }}</span>
+                        {% else %}
+                        TK {{ product.price }}
+                        {% endif %}
+                    </div>
+                    <a href="{{ product.get_url }}" class="btn btn-outline-primary btn-sm">View Details</a>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+        </div>
+        <a href="{% url 'store' %}" class="btn btn-outline-primary float-right">See all</a>
+    </div>
+    </section>
+    <!-- BEST SELLER SECTION END// -->
+
+
+
+
+
+
 </body>
 </html>
 

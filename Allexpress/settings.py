@@ -1,5 +1,6 @@
 from pathlib import Path
 import environ
+from django.contrib.messages import constants as messages
 
 # Initialize the environment variables
 env = environ.Env()
@@ -119,27 +120,23 @@ MEDIA_ROOT = BASE_DIR / 'media'
 # Default primary key field type
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-# from django.contrib.messages import constants as messages
-# MESSAGE_TAGS = {
-#     messages.ERROR: "danger",
-# }
+
+MESSAGE_TAGS = {
+    messages.ERROR: "danger",
+}
 
 # SSLCommerz configuration
 SSLCOMMERZ_STORE_ID = env('SSLCOMMERZ_STORE_ID')
 SSLCOMMERZ_STORE_PASS = env('SSLCOMMERZ_STORE_PASS')
 
-# Email configuration
-EMAIL_BACKEND = env('EMAIL_BACKEND')
-EMAIL_HOST = env('EMAIL_HOST')
-EMAIL_PORT = env.int('EMAIL_PORT')
-EMAIL_USE_TLS = env.bool('EMAIL_USE_TLS')
-EMAIL_HOST_USER = env('EMAIL_HOST_USER')
-EMAIL_HOST_PASSWORD = env('EMAIL_HOST_PASSWORD')
 
-
-
-
-
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True  
+EMAIL_HOST_USER = 'sir665904@gmail.com'
+EMAIL_HOST_PASSWORD = 'khaq gdcs mfoc gfes'
+DEFAULT_FROM_EMAIL = 'sir665904@gmail.com'
 
 
 

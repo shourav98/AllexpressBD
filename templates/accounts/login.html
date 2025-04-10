@@ -5,6 +5,18 @@
 <section class="section-conten padding-y" style="min-height:84vh">
 
     <!-- ============================ COMPONENT LOGIN   ================================= -->
+     {% if request.GET.command == 'verification' %}
+        <div class="card mx-auto" style="max-width: 380px; margin-top:100px;">
+            <div class="card-body">
+            <h4 class="card-title mb-4">Email has been sent!</h4>
+            <p class="text-center">Check your email inbox to complete the registration process.</p>
+            </div> <!-- card-body.// -->
+            <div>
+                Already verified? <a href="{% url 'login' %}">Login</a>
+            </div>
+        </div> <!-- card .// -->
+
+     {% else %}
         <div class="card mx-auto" style="max-width: 380px; margin-top:100px;">
             <div class="card-body">
             <h4 class="card-title mb-4">Sign in</h4>
@@ -32,6 +44,7 @@
             <p class="text-center mt-4">Don't have account? <a href="{% url 'register' %}">Sign up</a></p>
             <br><br>
     <!-- ============================ COMPONENT LOGIN  END.// ================================= -->
+     {% endif %}
     
     
     </section>

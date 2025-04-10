@@ -20,7 +20,8 @@ from django.utils.encoding import force_bytes
 from django.contrib.auth.tokens import default_token_generator
 from django.core.mail import EmailMessage  
 
-# Create your views here.
+
+# # Create your views here.
 # from django.contrib.auth import get_user_model
 # from django.db.utils import IntegrityError
 
@@ -78,7 +79,51 @@ from django.core.mail import EmailMessage
 #     return render(request, 'accounts/register.html', {'form': form})
 
 
+# def register(request):
+#     if request.method == 'POST':
+#         form = RegistrationForm(request.POST)
+#         if form.is_valid():
+#             first_name = form.cleaned_data['first_name']
+#             last_name = form.cleaned_data['last_name']
+#             phone_number = form.cleaned_data['phone_number']
+#             email = form.cleaned_data['email']
+#             password = form.cleaned_data['password']
+#             username = email.split('@')[0]
+#             user = Account.objects.create_user(
+#                 first_name=first_name,
+#                 last_name=last_name,
+#                 email=email,
+#                 username=username,
+#                 password=password
+#             )
+#             user.phone_number = phone_number
+#             user.save()
 
+#             # Send verification email
+#             try:
+#                 current_site = get_current_site(request)
+#                 mail_subject = "Please activate your account"
+#                 message = render_to_string('accounts/activate_verification_email.html', {
+#                     'user': user,
+#                     'domain': current_site.domain,  # Use .domain for clarity
+#                     'uid': urlsafe_base64_encode(force_bytes(user.pk)),
+#                     'token': default_token_generator.make_token(user),
+#                 })
+#                 send_email = EmailMessage(mail_subject, message, to=[email])
+#                 send_email.send(fail_silently=False)
+
+#                 messages.success(request, 'Registration successful! Please check your email to activate your account.')
+#                 return redirect('/accounts/login/?command=verification&email=' + email)
+#             except Exception as e:
+#                 messages.error(request, f'Registration succeeded, but failed to send verification email: {str(e)}')
+#                 return redirect('register')
+#     else:
+#         form = RegistrationForm()
+    
+#     context = {
+#         'form': form,
+#     }
+#     return render(request, 'accounts/register.html', context)
 
 def register(request):
     if request.method == 'POST':
@@ -97,7 +142,7 @@ def register(request):
             # Send verification email
             current_site = get_current_site(request)
             mail_subject = "Please activate your account"
-            message = render_to_string('accounts/activate_verification_mail.html', {
+            message = render_to_string('accounts/activate_verification_email.html', {
                 'user': user,
                 'domain': current_site,
                 'uid': urlsafe_base64_encode(force_bytes(user.pk)),
@@ -105,9 +150,13 @@ def register(request):
             })
             to_email = email
             send_email = EmailMessage(mail_subject, message, to=[to_email])
+            # send_email.send(fail_silently=False)
+
             send_email.send()
-            messages.success(request, 'Registration successful!')
-            return redirect('register')
+
+            return redirect('/accounts/login/?command=verification&email=' + email)
+            # messages.success(request, 'Registration successful!')
+            # return redirect('register')
 
     else:
         form = RegistrationForm()
@@ -221,7 +270,7 @@ def activate(request, uidb64, token):
         return redirect('login')
     else:
         messages.error(request, 'The activation link is invalid!')
-        return redirect('login')
+        return redirect('register')
 
 
 @login_required(login_url = 'login')
