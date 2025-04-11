@@ -10,6 +10,9 @@ from django.contrib import messages
 from orders.models import OrderProduct
 
 
+from django.db.models import Count
+
+
 # Create your views here.
 from decimal import Decimal
 
@@ -18,34 +21,94 @@ from .models import Product
 from decimal import Decimal
 from django.core.paginator import Paginator
 
-
-
-
-def store(request, category_slug=None):  # Accept category_slug as a parameter
+def store(request, category_slug=None):
     if category_slug:
-        # Filter products by category if category_slug is provided
-        category = get_object_or_404(Category, slug=category_slug)  # Get category by slug
+        category = get_object_or_404(Category, slug=category_slug)
         products = Product.objects.filter(category=category, is_available=True)
     else:
-        # If no category is provided, show all available products
         products = Product.objects.filter(is_available=True).order_by('id')
 
     # Calculate discounted price for each product
     for product in products:
-        # Ensure product.price is a Decimal type before doing the calculation
-        product.discounted_price = product.price * Decimal('0.5')  # Use Decimal for multiplication
+        product.discounted_price = product.price * Decimal('0.5')
+
+    # Debug: Check OrderProduct entries
+    order_products = OrderProduct.objects.filter(ordered=True)
+    print(f"OrderProduct entries with ordered=True: {order_products.count()}")
+    for op in order_products:
+        print(f"OrderProduct: Product={op.product.product_name}, Order is_ordered={op.order.is_ordered}, Product is_available={op.product.is_available}, OrderProduct ID={op.id}")
+
+    # Fetch best seller products
+    best_sellers = Product.objects.filter(
+        is_available=True,
+        orderproduct__ordered=True,
+        orderproduct__order__is_ordered=True
+    ).annotate(
+        sales_count=Count('orderproduct')
+    ).order_by('-sales_count', '-created_date')[:6]
+
+    # Debug: Check best sellers
+    print(f"Best sellers count: {best_sellers.count()}")
+    for product in best_sellers:
+        print(f"Best seller: {product.product_name}, Sales count: {product.sales_count}")
+
+    # Add discounted price to best sellers
+    for product in best_sellers:
+        product.discounted_price = product.price * Decimal('0.5')
 
     # Pagination
     paginator = Paginator(products, 3 if category_slug else 6)
     page = request.GET.get('page')
     paged_products = paginator.get_page(page)
 
+    # Handle search query
+    search_products = []
+    if 'keyword' in request.GET:
+        keyword = request.GET['keyword']
+        if keyword:
+            search_products = Product.objects.order_by('created_date').filter(
+                Q(description__icontains=keyword) | Q(product_name__icontains=keyword)
+            )
+            for product in search_products:
+                product.discounted_price = product.price * Decimal('0.5')
+
     context = {
         'products': paged_products,
         'product_count': products.count(),
-        'category_slug': category_slug,  # Pass the category_slug to the template for active category highlighting
+        'category_slug': category_slug,
+        'best_sellers': best_sellers,
+        'search_products': search_products,
     }
     return render(request, 'store/store.html', context)
+
+
+
+
+# def store(request, category_slug=None):  # Accept category_slug as a parameter
+#     if category_slug:
+#         # Filter products by category if category_slug is provided
+#         category = get_object_or_404(Category, slug=category_slug)  # Get category by slug
+#         products = Product.objects.filter(category=category, is_available=True)
+#     else:
+#         # If no category is provided, show all available products
+#         products = Product.objects.filter(is_available=True).order_by('id')
+
+#     # Calculate discounted price for each product
+#     for product in products:
+#         # Ensure product.price is a Decimal type before doing the calculation
+#         product.discounted_price = product.price * Decimal('0.5')  # Use Decimal for multiplication
+
+#     # Pagination
+#     paginator = Paginator(products, 3 if category_slug else 6)
+#     page = request.GET.get('page')
+#     paged_products = paginator.get_page(page)
+
+#     context = {
+#         'products': paged_products,
+#         'product_count': products.count(),
+#         'category_slug': category_slug,  # Pass the category_slug to the template for active category highlighting
+#     }
+#     return render(request, 'store/store.html', context)
 
 
 
