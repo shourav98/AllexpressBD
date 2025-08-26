@@ -3,47 +3,52 @@ from category.models import Category
 from django.urls import reverse
 from accounts.models import Account
 from django.db.models import Avg, Count
+from django.utils.text import slugify
+from django.core.exceptions import ValidationError
 # Create your models here.
+
+
 
 class Product(models.Model):
     name = models.CharField(max_length=255)
     product_name = models.CharField(max_length=200, unique=True)
     slug = models.SlugField(max_length=200, unique=True)
-    discription = models.TextField(max_length=500, blank=True)
+    description = models.TextField(max_length=500, blank=True)
     price = models.DecimalField(max_digits=10, decimal_places=2)
     discount_percentage = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True)
-    images = models.ImageField(upload_to = 'photos/products')
+    images = models.ImageField(upload_to='photos/products')
     stock = models.IntegerField()
     is_available = models.BooleanField(default=True)
     category = models.ForeignKey(Category, on_delete=models.CASCADE)
     created_date = models.DateTimeField(auto_now_add=True)
     modified_date = models.DateTimeField(auto_now=True)
 
+    @property
+    def discounted_price(self):
+        if self.discount_percentage and self.discount_percentage > 0:
+            return self.price - (self.price * self.discount_percentage / 100)
+        return self.price
 
     def get_url(self):
         return reverse('product_detail', args=[self.category.slug, self.slug])
 
     def __str__(self):
-        return self.name
-    
+        return self.product_name
+
     def averageReviews(self):
-        reviews = ReviewRating.objects.filter(product = self, status = True).aggregate(average = Avg('rating'))
-        avg = 0
-        if reviews['average'] is not None:
-            avg = float(reviews['average'])
-        return avg
-    
+        reviews = ReviewRating.objects.filter(product=self, status=True).aggregate(average=Avg('rating'))
+        return float(reviews['average']) if reviews['average'] is not None else 0
+
     def countReview(self):
-        reviews = ReviewRating.objects.filter(product = self, status = True).aggregate(count = Count('id'))
-        count = 0
-        if reviews['count'] is not None:
-            count = int(reviews['count'])
-        return count
-        
+        reviews = ReviewRating.objects.filter(product=self, status=True).aggregate(count=Count('id'))
+        return int(reviews['count']) if reviews['count'] is not None else 0
 
     def save(self, *args, **kwargs):
         if not self.slug:
             self.slug = slugify(self.product_name)
+        # Optional: Ensure products are only assigned to subcategories
+        if self.category.is_parent():
+            raise ValidationError("Products can only be assigned to subcategories, not parent categories.")
         super(Product, self).save(*args, **kwargs)
     
 

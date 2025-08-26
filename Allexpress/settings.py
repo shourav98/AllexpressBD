@@ -21,6 +21,8 @@ ALLOWED_HOSTS = [
     "*.ngrok.io",
     "*.ngrok-free.app",
     "5983-103-174-189-33.ngrok-free.app",  # Add the exact ngrok URL
+    "ariyanfootwear.com",
+    "www.ariyanfootwear.com"
 ]
 
 CSRF_TRUSTED_ORIGINS = env.list('CSRF_TRUSTED_ORIGINS', default=[
@@ -140,8 +142,8 @@ EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 EMAIL_HOST_USER = 'sir665904@gmail.com'
-EMAIL_HOST_PASSWORD = 'khaq gdcs mfoc gfes'
-DEFAULT_FROM_EMAIL = 'sir665904@gmail.com'
+EMAIL_HOST_PASSWORD = 'bjsw izog qbvy ntlw'
+DEFAULT_FROM_EMAIL = 'mominulshourav21@gmail.com'
 
 
 

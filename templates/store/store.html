@@ -3,7 +3,131 @@
 {% block content %}
 <style>
     /* Modern Store Layout */
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
 
+    @keyframes slideInRight {
+        from {
+            opacity: 0;
+            transform: translateX(30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateX(0);
+        }
+    }
+
+    .animate-fade-up {
+        animation: fadeInUp 0.6s ease-out forwards;
+    }
+
+    .animate-slide-in {
+        animation: slideInRight 0.6s ease-out forwards;
+    }
+
+    /* Recently Viewed Section */
+    .recently-viewed {
+        margin-top: 3rem;
+        padding: 2rem 0;
+        background: linear-gradient(to right, #f8f9fa, #ffffff);
+        border-radius: 15px;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+    }
+
+    .recently-viewed-title {
+        font-size: 1.5rem;
+        color: #333;
+        margin-bottom: 1.5rem;
+        text-align: center;
+        position: relative;
+        padding-bottom: 0.5rem;
+    }
+
+    .recently-viewed-title:after {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 50px;
+        height: 3px;
+        background: linear-gradient(to right, #333, #666);
+        border-radius: 2px;
+    }
+
+    .recently-viewed-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+        gap: 1.5rem;
+        padding: 0 1rem;
+    }
+
+    .recently-viewed-item {
+        background: white;
+        border-radius: 10px;
+        overflow: hidden;
+        transition: all 0.3s ease;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        opacity: 0;
+        transform: translateY(20px);
+    }
+
+    .recently-viewed-item.show {
+        opacity: 1;
+        transform: translateY(0);
+    }
+
+    .recently-viewed-item:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+    }
+
+    .recently-viewed-img {
+        position: relative;
+        padding-top: 100%;
+        overflow: hidden;
+    }
+
+    .recently-viewed-img img {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.5s ease;
+    }
+
+    .recently-viewed-item:hover .recently-viewed-img img {
+        transform: scale(1.1);
+    }
+
+    .recently-viewed-info {
+        padding: 1rem;
+        text-align: center;
+    }
+
+    .recently-viewed-name {
+        font-size: 0.9rem;
+        color: #333;
+        margin-bottom: 0.5rem;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .recently-viewed-price {
+        font-weight: 600;
+        color: #e53e3e;
+    }
 
     /* Header Section */
     .store-header {
@@ -46,6 +170,11 @@
 
     .filter-content {
         margin-top: 1rem;
+        display: block; /* Initially expanded */
+    }
+
+    .filter-content.active {
+        display: block;
     }
 
     /* Category Links */
@@ -70,6 +199,50 @@
     .category-list a:hover {
         color: #333;
         background: #f8f9fa;
+    }
+
+    .subcategory-list {
+        list-style: none;
+        padding-left: 1.5rem;
+        margin-top: 0.5rem;
+    }
+
+    /* Subcategories Section */
+    .subcategories-section {
+        margin-bottom: 2rem;
+        padding: 1rem;
+        background: #f8f9fa;
+        border-radius: 12px;
+    }
+
+    .subcategories-section h3 {
+        font-size: 1.3rem;
+        font-weight: 600;
+        color: #333;
+        margin-bottom: 1rem;
+    }
+
+    .subcategories-list {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 1rem;
+    }
+
+    .subcategory-item {
+        padding: 0.5rem 1rem;
+        background: white;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        text-decoration: none;
+        color: #333;
+        font-size: 0.9rem;
+        transition: all 0.3s ease;
+    }
+
+    .subcategory-item:hover {
+        background: #ff6200;
+        color: white;
+        border-color: #ff6200;
     }
 
     /* Size Filters */
@@ -120,31 +293,75 @@
     /* Products Grid */
     .products-grid {
         display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-        gap: 2rem;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 30px;
+        padding: 1rem 0;
+    }
+
+    @media (max-width: 992px) {
+        .products-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+    }
+
+    @media (max-width: 576px) {
+        .products-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    .product-item {
+        opacity: 1;
+        transform: translateY(0);
+        transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
     }
 
     .product-card {
         background: white;
         border-radius: 12px;
         overflow: hidden;
-        transition: transform 0.3s;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         box-shadow: 0 2px 15px rgba(0,0,0,0.05);
+        margin: 0;
+        width: 100%;
     }
 
     .product-card:hover {
         transform: translateY(-5px);
+        box-shadow: 0 8px 25px rgba(0,0,0,0.1);
     }
 
     .product-image {
         position: relative;
-        aspect-ratio: 1;
+        padding-top: 100%;
+        overflow: hidden;
+        background: #f8f9fa;
+    }
+
+    .product-image a {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        display: block;
     }
 
     .product-image img {
+        position: absolute;
+        top: 0;
+        left: 0;
         width: 100%;
         height: 100%;
         object-fit: cover;
+        transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .product-card:hover .product-image img {
+        transform: scale(1.05);
     }
 
     .discount-badge {
@@ -162,53 +379,70 @@
 
     .product-details {
         padding: 1.5rem;
+        display: flex;
+        flex-direction: column;
+        flex-grow: 1;
+        justify-content: space-between;
+        background: white;
     }
 
     .product-title {
         font-size: 1.1rem;
+        font-weight: 500;
         color: #333;
-        margin-bottom: 0.5rem;
+        margin-bottom: 0.8rem;
+        line-height: 1.4;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
     }
 
     .product-price {
-        font-size: 1.2rem;
-        font-weight: 600;
-        color: #333;
         display: flex;
         align-items: center;
-        gap: 0.5rem;
+        gap: 0.8rem;
+        margin: 1rem 0;
     }
 
     .discounted-price {
-        color: #e53e3e;
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: #e41e31;
     }
 
     .original-price {
-        font-size: 0.9rem;
-        color: #666;
+        font-size: 1rem;
+        color: #999;
         text-decoration: line-through;
     }
 
     .product-actions {
         margin-top: 1rem;
+        width: 100%;
     }
 
     .view-details-btn {
-        
+        display: block;
         width: 100%;
         padding: 0.8rem;
-        background: #333;
+        background: linear-gradient(45deg, #1a1a1a, #363636);
         color: white;
-        border: none;
-        border-radius: 6px;
-        cursor: pointer;
-        transition: background 0.3s;
+        text-align: center;
+        text-decoration: none;
+        border-radius: 8px;
+        font-weight: 500;
+        transition: all 0.3s ease;
+        border: 1px solid rgba(255, 255, 255, 0.1);
     }
 
     .view-details-btn:hover {
-        background: #444;
+        background: linear-gradient(45deg, #000000, #222222);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        color: white;
         text-decoration: none;
-        color: orange;
     }
 
     /* Pagination */
@@ -216,7 +450,7 @@
         display: flex;
         justify-content: center;
         gap: 0.5rem;
-        margin-top: 3rem;
+        margin: 3rem 0;
     }
 
     .page-link {
@@ -253,17 +487,41 @@
             grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
             gap: 1rem;
         }
+
+        .subcategories-list {
+            flex-direction: column;
+        }
     }
 </style>
 
-<div class=" container">
-    <header class="store-header ">
+<div class="container store-container">
+    <header class="store-header">
         {% if 'search' in request.path %}
             <h1>Search Results</h1>
+        {% elif category %}
+            <h1>
+                {% if category.is_parent %}
+                    {{ category.category_name }}
+                {% else %}
+                    {{ category.parent.category_name }} > {{ category.category_name }}
+                {% endif %}
+            </h1>
         {% else %}
             <h1>Our Collection</h1>
         {% endif %}
     </header>
+
+    <!-- Subcategories (if parent category) -->
+    {% if category and category.is_parent %}
+        <div class="subcategories-section">
+            <h3>Subcategories</h3>
+            <div class="subcategories-list">
+                {% for subcategory in categories %}
+                    <a href="{% url 'products_by_category' subcategory.slug %}" class="subcategory-item">{{ subcategory.category_name }}</a>
+                {% endfor %}
+            </div>
+        </div>
+    {% endif %}
 
     <div class="row">
         <!-- Filters Sidebar -->
@@ -273,32 +531,41 @@
                 <div class="filter-section">
                     <div class="filter-title">
                         Categories
-                        <i class="fas fa-chevron-down"></i>
+                        <i class="fas fa-chevron-up"></i>
                     </div>
-                    <div class="filter-content">
+                    <div class="filter-content active">
                         <ul class="category-list">
                             <li><a href="{% url 'store' %}">All Products</a></li>
-                            {% for category in links %}
-                                <li><a href="{{ category.get_url }}">{{ category.category_name }}</a></li>
+                            {% for parent in parent_categories %}
+                                <li>
+                                    <a href="{% url 'products_by_category' parent.slug %}">{{ parent.category_name }}</a>
+                                    {% if parent.get_subcategories %}
+                                        <ul class="subcategory-list">
+                                            {% for subcategory in parent.get_subcategories %}
+                                                <li><a href="{% url 'products_by_category' subcategory.slug %}">{{ subcategory.category_name }}</a></li>
+                                            {% endfor %}
+                                        </ul>
+                                    {% endif %}
+                                </li>
                             {% endfor %}
                         </ul>
                     </div>
                 </div>
 
-                {% comment %} <!-- Sizes -->
+                <!-- Sizes -->
                 <div class="filter-section">
                     <div class="filter-title">
                         Sizes
-                        <i class="fas fa-chevron-down"></i>
+                        <i class="fas fa-chevron-up"></i>
                     </div>
-                    <div class="filter-content">
+                    <div class="filter-content active">
                         <div class="size-options">
-                            <div class="size-option">XS</div>
-                            <div class="size-option">S</div>
-                            <div class="size-option">M</div>
-                            <div class="size-option">L</div>
-                            <div class="size-option">XL</div>
-                            <div class="size-option">XXL</div>
+                            <div class="size-option" data-size="40">40</div>
+                            <div class="size-option" data-size="42">42</div>
+                            <div class="size-option" data-size="44">44</div>
+                            <div class="size-option" data-size="46">46</div>
+                            <div class="size-option" data-size="48">48</div>
+                            <div class="size-option" data-size="50">50</div>
                         </div>
                     </div>
                 </div>
@@ -307,32 +574,33 @@
                 <div class="filter-section">
                     <div class="filter-title">
                         Price Range
-                        <i class="fas fa-chevron-down"></i>
+                        <i class="fas fa-chevron-up"></i>
                     </div>
-                    <div class="filter-content">
-                        <form method="get" action="{% url 'store' %}">
-                            <div class="price-range">
-                                <div class="price-inputs">
-                                    <select class="price-input" name="price_min">
-                                        <option value="0">$0</option>
-                                        <option value="50">$50</option>
-                                        <option value="100">$100</option>
-                                        <option value="200">$200</option>
-                                        <option value="500">$500</option>
-                                    </select>
-                                    <select class="price-input" name="price_max">
-                                        <option value="100">$100</option>
-                                        <option value="200">$200</option>
-                                        <option value="500">$500</option>
-                                        <option value="1000">$1000</option>
-                                        <option value="2000">$2000+</option>
-                                    </select>
-                                </div>
-                                <button type="submit" class="view-details-btn" style="margin-top: 1rem;">Apply Filter</button>
+                    <div class="filter-content active">
+                        <div class="price-range">
+                            <div class="price-inputs">
+                                <select class="price-input" name="price_min" id="price_min">
+                                    <option value="0">Tk 0</option>
+                                    <option value="501">Tk 501</option>
+                                    <option value="1001">Tk 1001</option>
+                                    <option value="1501">Tk 1501</option>
+                                    <option value="2001">Tk 2001</option>
+                                    <option value="3001">Tk 3001</option>
+                                    <option value="4001">Tk 4001</option>
+                                </select>
+                                <select class="price-input" name="price_max" id="price_max">
+                                    <option value="500">Tk 500</option>
+                                    <option value="1000">Tk 1000</option>
+                                    <option value="1500">Tk 1500</option>
+                                    <option value="2000">Tk 2000</option>
+                                    <option value="3000">Tk 3000</option>
+                                    <option value="4000">Tk 4000</option>
+                                    <option value="5000">Tk 5000+</option>
+                                </select>
                             </div>
-                        </form>
+                        </div>
                     </div>
-                </div> {% endcomment %}
+                </div>
             </div>
         </div>
 
@@ -340,30 +608,34 @@
         <div class="col-md-9">
             <p class="mb-4">{{ product_count }} Products Found</p>
             
-            <div class="products-grid">
+            <div class="products-grid" id="productsGrid">
                 {% if products %}
                     {% for product in products %}
-                        <div class="product-card">
-                            <div class="product-image">
-                                <a href="{{ product.get_url }}">
-                                    <img src="{{ product.images.url }}" alt="{{ product.product_name }}">
-                                    {% if product.discounted_price %}
-                                        <span class="discount-badge">-50%</span>
-                                    {% endif %}
-                                </a>
-                            </div>
-                            <div class="product-details">
-                                <h3 class="product-title">{{ product.product_name }}</h3>
-                                <div class="product-price">
-                                    {% if product.discounted_price %}
-                                        <span class="discounted-price">${{ product.discounted_price }}</span>
-                                        <span class="original-price">${{ product.price }}</span>
-                                    {% else %}
-                                        <span>${{ product.price }}</span>
-                                    {% endif %}
+                        <div class="product-item">
+                            <div class="product-card" data-product-id="{{ product.id }}">
+                                <div class="product-image">
+                                    <a href="{{ product.get_url }}">
+                                        <img src="{{ product.images.url|default:'/static/images/placeholder.jpg' }}" alt="{{ product.product_name }}">
+                                        {% if product.discounted_price != product.price %}
+                                            <span class="discount-badge">-{{ product.discount_percentage|default:'50' }}%</span>
+                                        {% endif %}
+                                    </a>
                                 </div>
-                                <div class="product-actions">
-                                    <a href="{{ product.get_url }}" class="view-details-btn">View Details</a>
+                                <div class="product-details">
+                                    <div>
+                                        <h3 class="product-title">{{ product.product_name }}</h3>
+                                        <div class="product-price">
+                                            {% if product.discounted_price != product.price %}
+                                                <span class="discounted-price">TK {{ product.discounted_price|floatformat:2 }}</span>
+                                                <span class="original-price">TK {{ product.price|floatformat:2 }}</span>
+                                            {% else %}
+                                                <span class="discounted-price">TK {{ product.price|floatformat:2 }}</span>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                    <div class="product-actions">
+                                        <a href="{{ product.get_url }}" class="view-details-btn">View Details</a>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -379,25 +651,175 @@
             {% if products.has_other_pages %}
                 <div class="pagination">
                     {% if products.has_previous %}
-                        <a href="?page={{ products.previous_page_number }}" class="page-link">Previous</a>
+                        <a href="?{% if request.GET.size %}size={{ request.GET.size }}&{% endif %}{% if request.GET.price_min %}price_min={{ request.GET.price_min }}&{% endif %}{% if request.GET.price_max %}price_max={{ request.GET.price_max }}&{% endif %}page={{ products.previous_page_number }}" class="page-link">Previous</a>
                     {% endif %}
-
-                    {% for i in products.paginator.page_range %}
-                        {% if products.number == i %}
-                            <a href="#" class="page-link active">{{ i }}</a>
+                    {% for num in products.paginator.page_range %}
+                        {% if products.number == num %}
+                            <a href="#" class="page-link active">{{ num }}</a>
                         {% else %}
-                            <a href="?page={{ i }}" class="page-link">{{ i }}</a>
+                            <a href="?{% if request.GET.size %}size={{ request.GET.size }}&{% endif %}{% if request.GET.price_min %}price_min={{ request.GET.price_min }}&{% endif %}{% if request.GET.price_max %}price_max={{ request.GET.price_max }}&{% endif %}page={{ num }}" class="page-link">{{ num }}</a>
                         {% endif %}
                     {% endfor %}
-
                     {% if products.has_next %}
-                        <a href="?page={{ products.next_page_number }}" class="page-link">Next</a>
+                        <a href="?{% if request.GET.size %}size={{ request.GET.size }}&{% endif %}{% if request.GET.price_min %}price_min={{ request.GET.price_min }}&{% endif %}{% if request.GET.price_max %}price_max={{ request.GET.price_max }}&{% endif %}page={{ products.next_page_number }}" class="page-link">Next</a>
                     {% endif %}
                 </div>
             {% endif %}
-            <br>
         </div>
     </div>
+
+    <!-- Recently Viewed Products Section -->
+    <section class="recently-viewed">
+        <div class="container">
+            <h2 class="recently-viewed-title">Recently Viewed</h2>
+            <div class="recently-viewed-grid" id="recentlyViewedGrid">
+                {% if recent_products %}
+                    {% for product in recent_products %}
+                        <div class="recently-viewed-item">
+                            <a href="{% url 'product_detail' product.category.slug product.slug %}" class="recently-viewed-link">
+                                <div class="recently-viewed-img">
+                                    <img src="{{ product.images.url|default:'/static/images/placeholder.jpg' }}" alt="{{ product.product_name }}">
+                                    {% if product.discounted_price != product.price %}
+                                        <span class="discount-badge">-{{ product.discount_percentage|default:'50' }}%</span>
+                                    {% endif %}
+                                </div>
+                                <div class="recently-viewed-info">
+                                    <h3 class="recently-viewed-name">{{ product.product_name }}</h3>
+                                    <div class="recently-viewed-price">
+                                        {% if product.discounted_price != product.price %}
+                                            <span class="discounted-price">TK {{ product.discounted_price|floatformat:2 }}</span>
+                                            <small class="original-price">TK {{ product.price|floatformat:2 }}</small>
+                                        {% else %}
+                                            <span>TK {{ product.price|floatformat:2 }}</span>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </a>
+                        </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="text-center" style="grid-column: 1 / -1; padding: 2rem;">
+                        <p style="color: #666; font-size: 1.1rem;">No recently viewed products</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </section>
 </div>
 
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Toggle filter content
+    const filterTitles = document.querySelectorAll('.filter-title');
+    filterTitles.forEach(title => {
+        title.addEventListener('click', function() {
+            const content = this.nextElementSibling;
+            content.classList.toggle('active');
+            const icon = this.querySelector('i');
+            icon.classList.toggle('fa-chevron-down');
+            icon.classList.toggle('fa-chevron-up');
+        });
+    });
+
+    // Size option selection and automatic filtering
+    const sizeOptions = document.querySelectorAll('.size-option');
+    let selectedSize = '{{ request.GET.size|default:"" }}'; // Get initial size from URL
+    sizeOptions.forEach(option => {
+        if (option.dataset.size === selectedSize) {
+            option.classList.add('active');
+        }
+        option.addEventListener('click', function() {
+            sizeOptions.forEach(opt => opt.classList.remove('active'));
+            this.classList.add('active');
+            selectedSize = this.dataset.size;
+            updateURL();
+        });
+    });
+
+    // Price range automatic filtering
+    const priceMinSelect = document.getElementById('price_min');
+    const priceMaxSelect = document.getElementById('price_max');
+    const currentPriceMin = '{{ request.GET.price_min|default:"0" }}';
+    const currentPriceMax = '{{ request.GET.price_max|default:"5000" }}';
+
+    // Set initial selected options
+    for (let option of priceMinSelect.options) {
+        if (option.value === currentPriceMin) option.selected = true;
+    }
+    for (let option of priceMaxSelect.options) {
+        if (option.value === currentPriceMax) option.selected = true;
+    }
+
+    // Add event listeners for price changes
+    priceMinSelect.addEventListener('change', updateURL);
+    priceMaxSelect.addEventListener('change', updateURL);
+
+    // Function to update URL with filter parameters
+    function updateURL() {
+        const priceMin = priceMinSelect.value;
+        const priceMax = priceMaxSelect.value;
+        const url = new URL(window.location);
+        url.searchParams.set('price_min', priceMin);
+        url.searchParams.set('price_max', priceMax);
+        if (selectedSize) {
+            url.searchParams.set('size', selectedSize);
+        } else {
+            url.searchParams.delete('size');
+        }
+        // Preserve current page if it exists
+        const currentPage = url.searchParams.get('page');
+        if (!currentPage) {
+            url.searchParams.delete('page');
+        }
+        window.location.href = url.toString();
+    }
+
+    // Animate products on load
+    document.querySelectorAll('.product-card').forEach((card, index) => {
+        setTimeout(() => {
+            card.classList.add('animate-fade-up');
+        }, index * 100);
+    });
+
+    // Animate recently viewed items when they come into view
+    const observerOptions = {
+        threshold: 0.2,
+        rootMargin: '50px'
+    };
+
+    const observer = new IntersectionObserver((entries, observer) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.classList.add('show');
+                observer.unobserve(entry.target);
+            }
+        });
+    }, observerOptions);
+
+    document.querySelectorAll('.recently-viewed-item').forEach(item => {
+        observer.observe(item);
+    });
+
+    // Store viewed product in local storage
+    function storeRecentlyViewed(productId) {
+        let recentlyViewed = JSON.parse(localStorage.getItem('recentlyViewed') || '[]');
+        if (!recentlyViewed.includes(productId)) {
+            recentlyViewed.unshift(productId);
+            recentlyViewed = recentlyViewed.slice(0, 8); // Keep only last 8 items
+            localStorage.setItem('recentlyViewed', JSON.stringify(recentlyViewed));
+        }
+    }
+
+    // Store current product view
+    const productCards = document.querySelectorAll('.product-card');
+    productCards.forEach(card => {
+        card.addEventListener('click', function() {
+            const productId = this.dataset.productId;
+            if (productId) {
+                storeRecentlyViewed(productId);
+            }
+        });
+    });
+});
+</script>
 {% endblock %}

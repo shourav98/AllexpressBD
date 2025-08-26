@@ -56,6 +56,11 @@
         transition: all 0.3s ease;
     }
 
+    .thumb:hover {
+        border-color: #ff6200;
+        transform: scale(1.05);
+    }
+
     .thumb.active {
         border-color: #222;
     }
@@ -68,12 +73,16 @@
     }
 
     /* Product Info */
-
-    .popular-title{
+    .popular-title {
         text-align: center;
         margin-top: 10px;
         margin-bottom: 10px;
         font-size: 2.5rem;
+        transition: color 0.4s ease;
+    }
+
+    .popular-title:hover {
+        color: #ff6200;
     }
 
     .product-info {
@@ -96,16 +105,22 @@
     }
 
     .product-price {
-        font-size: clamp(1.2rem, 3vw, 1.8rem);
-        font-weight: 500;
-        color: red;
+        text-align: center;
         margin-bottom: 1.5rem;
     }
 
-    .original-price {
-        text-decoration: line-through;
+    .product-price .discounted {
+        font-size: clamp(1.1rem, 2vw, 1.6rem);
+        font-weight: 500;
+        color: red;
+        display: block;
+    }
+
+    .product-price .original {
+        font-size: clamp(0.9rem, 1.5vw, 1.2rem);
         color: #999;
-        margin-left: 0.5rem;
+        text-decoration: line-through;
+        display: block;
     }
 
     .product-description {
@@ -144,7 +159,11 @@
         justify-content: center;
         cursor: pointer;
         transition: all 0.3s ease;
-        position: relative;
+    }
+
+    .option-item:hover {
+        border-color: #ff6200;
+        transform: scale(1.1);
     }
 
     @media (min-width: 768px) {
@@ -166,7 +185,13 @@
         text-transform: uppercase;
         letter-spacing: 1px;
         cursor: pointer;
-        transition: all 0.3s ease;
+        transition: background-color 0.4s ease, transform 0.4s ease, box-shadow 0.4s ease;
+    }
+
+    .add-to-cart:hover {
+        background-color: #333;
+        transform: scale(1.05);
+        box-shadow: 0 4px 10px rgba(0,0,0,0.2);
     }
 
     /* Related Products */
@@ -222,34 +247,145 @@
         }
     }
 
+    /* Carousel Controls */
+    .carousel-control-prev,
+    .carousel-control-next {
+        transition: transform 0.4s ease, background-color 0.4s ease;
+    }
+
+    .carousel-control-prev:hover,
+    .carousel-control-next:hover {
+        transform: scale(1.1);
+    }
+
+    .carousel-control-prev div,
+    .carousel-control-next div {
+        background: rgba(0, 0, 0, 0.9);
+        width: 40px;
+        height: 40px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 8px;
+        border: 2px solid white;
+        transition: background-color 0.4s ease, transform 0.4s ease;
+    }
+
+    .carousel-control-prev:hover div,
+    .carousel-control-next:hover div {
+        background: rgba(0, 0, 0, 1);
+        transform: scale(1.1);
+    }
+
     /* Product Grid Responsive */
     .row {
         margin: 0 -0.5rem;
+        display: flex;
+        flex-wrap: wrap;
     }
 
     .col-md-3 {
         padding: 0.5rem;
+        flex: 0 0 25%;
+        max-width: 25%;
     }
 
     @media (max-width: 768px) {
         .col-md-3 {
-            width: 50%;
+            flex: 0 0 50%;
+            max-width: 50%;
         }
     }
 
     @media (max-width: 576px) {
         .col-md-3 {
-            width: 100%;
+            flex: 0 0 100%;
+            max-width: 100%;
         }
     }
 
     .card {
         height: 100%;
-        transition: transform 0.3s ease;
+        display: flex;
+        flex-direction: column;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        overflow: hidden;
+        transition: transform 0.4s ease, box-shadow 0.4s ease, background-color 0.4s ease;
     }
 
     .card:hover {
-        transform: translateY(-5px);
+        transform: translateY(-5px) scale(1.05);
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+        background-color: #f8f9fa;
+    }
+
+    .card-img-wrap {
+        position: relative;
+        width: 100%;
+        padding-top: 100%; /* 1:1 aspect ratio */
+        overflow: hidden;
+        cursor: pointer;
+    }
+
+    .card-img-wrap::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.1);
+        opacity: 0;
+        transition: opacity 0.4s ease;
+        z-index: 1;
+    }
+
+    .card:hover .card-img-wrap::before {
+        opacity: 1;
+    }
+
+    .card-img-top {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.4s ease, opacity 0.4s ease, box-shadow 0.4s ease, border 0.4s ease;
+        border: 2px solid transparent;
+    }
+
+    .card:hover .card-img-top {
+        transform: scale(1.1);
+        opacity: 0.95;
+        box-shadow: 0 6px 12px rgba(0,0,0,0.2);
+        border: 2px solid #ff6200;
+    }
+
+    .card-body {
+        flex-grow: 1;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        text-align: center;
+        padding: 1rem;
+    }
+
+    .card-title {
+        margin-bottom: 0.5rem;
+        font-size: 1.1rem;
+        transition: color 0.4s ease;
+    }
+
+    .card-title a {
+        color: #111;
+        text-decoration: none;
+        transition: color 0.4s ease;
+    }
+
+    .card-title a:hover {
+        color: #ff6200;
     }
 
     .discount-badge {
@@ -261,167 +397,877 @@
         padding: 0.25rem 0.5rem;
         border-radius: 4px;
         font-weight: 500;
-        font-size: clamp(0.8rem, 2vw, 1.1rem);
+        font-size: 0.9rem;
+        z-index: 2;
+        transition: transform 0.4s ease;
+    }
+
+    .card:hover .discount-badge {
+        transform: scale(1.1);
+    }
+
+    .badge-best-seller {
+        position: absolute;
+        top: 5px;
+        left: 5px;
+        background: #ffcc00;
+        color: #111;
+        padding: 0.25rem 0.5rem;
+        border-radius: 4px;
+        font-weight: 500;
+        font-size: 0.9rem;
+        z-index: 2;
+        transition: transform 0.4s ease;
+    }
+
+    .card:hover .badge-best-seller {
+        transform: scale(1.1);
+    }
+
+    .btn-view-details {
+        transition: background-color 0.4s ease, transform 0.4s ease, box-shadow 0.4s ease;
+        padding: 8px 20px;
+        background: #ff6200;
+        color: white;
+        border: none;
+        font-weight: 500;
+        border-radius: 20px;
+    }
+
+    .btn-view-details:hover {
+        background: #e55a00;
+        transform: scale(1.1);
+        box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+    }
+
+    /* Countdown Styles */
+    .countdown-container {
+        background: linear-gradient(135deg, #ff4e50, #c0a41a);
+        padding: 2rem;
+        margin-top: 30px;
+        border-radius: 15px;
+        margin-bottom: 2rem;
+        text-align: center;
+        position: relative;
+        overflow: hidden;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    }
+
+    .countdown-container::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: url('{% static "images/pattern.png" %}') repeat;
+        opacity: 0.1;
         z-index: 1;
+    }
+
+    .countdown-title {
+        font-size: 1.8rem;
+        color: white;
+        margin-bottom: 1.5rem;
+        font-weight: 700;
+        text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+        position: relative;
+        z-index: 2;
+        transition: color 0.4s ease;
+    }
+
+    .countdown-title:hover {
+        color: #f0f0f0;
+    }
+
+    .countdown-timer {
+        display: flex;
+        justify-content: center;
+        gap: 1.5rem;
+        position: relative;
+        z-index: 2;
+    }
+
+    .countdown-box {
+        background: rgba(255, 255, 255, 0.95);
+        padding: 1.2rem;
+        border-radius: 12px;
+        min-width: 100px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        transition: transform 0.4s ease, background-color 0.4s ease, box-shadow 0.4s ease;
+    }
+
+    .countdown-box:hover {
+        transform: translateY(-5px);
+        background-color: #ffffff;
+        box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+    }
+
+    .countdown-number {
+        font-size: 2.2rem;
+        font-weight: bold;
+        color: #ff4e50;
+        margin-bottom: 0.25rem;
+        text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
+        transition: color 0.4s ease;
+    }
+
+    .countdown-box:hover .countdown-number {
+        color: #e03e3e;
+    }
+
+    .countdown-label {
+        font-size: 0.9rem;
+        color: #444;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        font-weight: 600;
+    }
+
+    @media (max-width: 576px) {
+        .countdown-container {
+            padding: 1.5rem;
+        }
+
+        .countdown-timer {
+            gap: 0.75rem;
+        }
+        
+        .countdown-box {
+            min-width: 70px;
+            padding: 0.75rem;
+        }
+
+        .countdown-number {
+            font-size: 1.6rem;
+        }
+
+        .countdown-label {
+            font-size: 0.75rem;
+        }
+
+        .countdown-title {
+            font-size: 1.4rem;
+        }
+    }
+
+    /* Category Section Styles */
+    .category-section {
+        text-align: center;
+        padding: 2rem 0;
+    }
+
+    .category-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 1rem;
+        margin-top: 1rem;
+        max-width: 1000px;
+        margin-left: auto;
+        margin-right: auto;
+    }
+
+    .category-item {
+        text-align: center;
+        transition: transform 0.4s ease, background-color 0.4s ease, box-shadow 0.4s ease;
+        background-color: #fff;
+        padding: 0.5rem;
+        border-radius: 10px;
+    }
+
+    .category-item:hover {
+        transform: scale(1.05) translateY(-5px);
+        background-color: #f8f9fa;
+        box-shadow: 0 6px 12px rgba(0,0,0,0.15);
+    }
+
+    .category-item img {
+        width: 100%;
+        height: 195px;
+        object-fit: cover;
+        border-radius: 10px;
+        border: 5px solid #fff;
+        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        transition: transform 0.4s ease, opacity 0.4s ease, box-shadow 0.4s ease, border-color 0.4s ease;
+        cursor: pointer;
+    }
+
+    .category-item:hover img {
+        transform: scale(1.1);
+        opacity: 0.95;
+        box-shadow: 0 6px 12px rgba(0,0,0,0.2);
+        border-color: #ff6200;
+    }
+
+    .category-item h4 {
+        margin-top: 0.5rem;
+        font-size: 1.2rem;
+        color: #ff6200;
+        text-decoration: none;
+        transition: color 0.4s ease, transform 0.4s ease;
+    }
+
+    .category-item:hover h4 {
+        color: #e55a00;
+        transform: translateY(-3px);
+    }
+
+    @media (max-width: 768px) {
+        .category-grid {
+            grid-template-columns: repeat(2, 1fr);
+            grid-template-rows: auto auto;
+            max-width: 500px;
+        }
+
+        .category-item img {
+            height: 150px;
+        }
+
+        .category-item h4 {
+            font-size: 1rem;
+        }
+    }
+
+    @media (max-width: 576px) {
+        .category-grid {
+            grid-template-columns: repeat(2, 1fr);
+            grid-template-rows: auto auto;
+            max-width: 350px;
+        }
+
+        .category-item img {
+            height: 120px;
+        }
+
+        .category-item h4 {
+            font-size: 0.9rem;
+        }
+    }
+
+    /* Show More Button Styles */
+    .show-more-container {
+        display: flex;
+        justify-content: center;
+        margin: 3rem 0;
+        perspective: 1000px;
+        flex-direction: column;
+        align-items: center;
+        gap: 1rem;
+    }
+
+    .products-counter {
+        font-size: 0.9rem;
+        color: #cfc6c6;
+        background: linear-gradient(45deg, #443e3e, #666262);
+        padding: 10px 20px;
+        border-radius: 8px;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        letter-spacing: 0.5px;
+        font-weight: 500;
+    }
+    
+    .products-counter span {
+        color: #ffffff;
+        font-weight: 600;
+        text-shadow: 0 1px 2px rgba(0,0,0,0.2);
+    }
+
+    @keyframes borderGlow {
+        0%, 100% {
+            border-color: rgba(255, 255, 255, 0.1);
+        }
+        50% {
+            border-color: rgba(255, 255, 255, 0.3);
+        }
+    }
+
+    @keyframes gradientShift {
+        0% {
+            background-position: 0% 50%;
+        }
+        50% {
+            background-position: 100% 50%;
+        }
+        100% {
+            background-position: 0% 50%;
+        }
+    }
+
+    .show-more-btn {
+        background: linear-gradient(45deg, #1a1a1a, #363636, #1a1a1a);
+        background-size: 200% 200%;
+        color: white;
+        border: none;
+        padding: 18px 50px;
+        border-radius: 8px;
+        font-size: 1.1rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 1.5px;
+        cursor: pointer;
+        transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3),
+                   inset 0 0 0 1px rgba(255, 255, 255, 0.1);
+        position: relative;
+        overflow: hidden;
+        min-width: 250px;
+        animation: pulseGlow 3s infinite;
+    }
+
+    .show-more-btn:before {
+        content: '';
+        position: absolute;
+        top: -2px;
+        left: -2px;
+        right: -2px;
+        bottom: -2px;
+        background: linear-gradient(45deg, #000, #333, #000);
+        background-size: 200% 200%;
+        z-index: -1;
+        border-radius: 10px;
+        animation: gradientShift 3s ease infinite;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+
+    .show-more-btn:after {
+        content: attr(data-count);
+        position: absolute;
+        top: -10px;
+        right: -10px;
+        background: #ff6200;
+        color: white;
+        width: 25px;
+        height: 25px;
+        border-radius: 50%;
+        font-size: 0.8rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+        opacity: 0;
+        transform: scale(0);
+        transition: all 0.3s ease;
+        border: 2px solid rgba(255, 255, 255, 0.2);
+    }
+
+    .show-more-btn.has-more:after {
+        opacity: 1;
+        transform: scale(1);
+    }
+
+    .show-more-btn:hover {
+        transform: translateY(-3px) scale(1.02);
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4),
+                   inset 0 0 0 2px rgba(255, 255, 255, 0.2);
+        background-position: 100% 100%;
+        letter-spacing: 2px;
+    }
+
+    .show-more-btn:hover:before {
+        opacity: 1;
+    }
+
+    .show-more-btn:active {
+        transform: translateY(0) scale(0.98);
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        letter-spacing: 1.5px;
+    }
+
+    .show-more-btn::after {
+        content: '';
+        position: absolute;
+        top: -50%;
+        left: -50%;
+        width: 200%;
+        height: 200%;
+        background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 50%);
+        transform: scale(0);
+        opacity: 0;
+        transition: transform 0.6s ease-out, opacity 0.4s ease-out;
+    }
+
+    .show-more-btn:hover::after {
+        transform: scale(1);
+        opacity: 1;
+    }
+
+    @keyframes fadeInScale {
+        0% {
+            opacity: 0;
+            transform: scale(0.8) translateY(40px);
+        }
+        60% {
+            transform: scale(1.05) translateY(-5px);
+        }
+        100% {
+            opacity: 1;
+            transform: scale(1) translateY(0);
+        }
+    }
+
+    @keyframes pulseGlow {
+        0% {
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
+        50% {
+            box-shadow: 0 5px 25px rgba(255,255,255,0.1);
+        }
+        100% {
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
+    }
+
+    .product-item {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+        transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .product-item.hidden {
+        display: none;
+        opacity: 0;
+        transform: translateY(40px) scale(0.8);
+    }
+
+    .product-item.revealing {
+        animation: fadeInScale 0.8s cubic-bezier(0.4, 0, 0.2, 1) forwards;
     }
 </style>
 
 <!-- ========================= SECTION MAIN ========================= -->
 <section class="section-intro padding-y-sm">
 <div class="container">
+    {% if search_products %}
+        {% for search_product in search_products %}
+            {% if forloop.first %}
+                <header class="section-heading">
+                    <a href="{% url 'store' %}" class="btn btn-outline-primary float-right">See all</a>
+                    <h3 class="section-title">Search results for "{{ search_product }}"</h3>
+                </header>
+            {% endif %}
+        {% endfor %}
+    {% endif %}
 
-{% for search_product in search_products  %}
-{% if forloop.first %}
-<header class="section-heading">
-<a href="{% url 'store' %}" class="btn btn-outline-primary float-right">See all</a>
-<h3 class="section-title">Search results for "{{ search_product }}"</h3>
-</header>
-{% endif %}
-{% endfor %}
-
-<div class="intro-banner-wrap">
-<!-- Carousel Banner Section -->
-<div id="carouselBanner" class="carousel slide" data-ride="carousel">
-    <ol class="carousel-indicators">
-        <li data-target="#carouselBanner" data-slide-to="0" class="active"></li>
-        <li data-target="#carouselBanner" data-slide-to="1"></li>
-        <li data-target="#carouselBanner" data-slide-to="2"></li>
-        <li data-target="#carouselBanner" data-slide-to="3"></li>
-        <li data-target="#carouselBanner" data-slide-to="4"></li>
-        <li data-target="#carouselBanner" data-slide-to="5"></li>
-    </ol>
-    <div class="carousel-inner rounded">
-        <div class="carousel-item active">
-            <img src="{% static 'images/banners/banner_1.jpg' %}" class="d-block w-100 h-100" alt="Banner 1" style="object-fit: cover;">
+    <div class="intro-banner-wrap">
+        <!-- Carousel Banner Section -->
+        <div id="carouselBanner" class="carousel slide" data-ride="carousel" data-interval="5000">
+            <ol class="carousel-indicators">
+                <li data-target="#carouselBanner" data-slide-to="0" class="active"></li>
+                <li data-target="#carouselBanner" data-slide-to="1"></li>
+                <li data-target="#carouselBanner" data-slide-to="2"></li>
+                <li data-target="#carouselBanner" data-slide-to="3"></li>
+                <li data-target="#carouselBanner" data-slide-to="4"></li>
+            </ol>
+            <div class="carousel-inner rounded">
+                <div class="carousel-item active">
+                    <img src="{% static 'images/banners/banner_1.jpg' %}" class="d-block w-100 h-100" alt="Banner 1" style="object-fit: cover;">
+                </div>
+                <div class="carousel-item">
+                    <img src="{% static 'images/banners/banner_2.jpg' %}" class="d-block w-100 h-100" alt="Banner 2" style="object-fit: cover;">
+                </div>
+                <div class="carousel-item">
+                    <img src="{% static 'images/banners/banner_3.jpg' %}" class="d-block w-100 h-100" alt="Banner 3" style="object-fit: cover;">
+                </div>
+                <div class="carousel-item">
+                    <img src="{% static 'images/banners/banner_4.jpg' %}" class="d-block w-100 h-100" alt="Banner 4" style="object-fit: cover;">
+                </div>
+                <div class="carousel-item">
+                    <img src="{% static 'images/banners/banner.jpg' %}" class="d-block w-100 h-100" alt="Banner 5" style="object-fit: cover;">
+                </div>
+            </div>
+            <a class="carousel-control-prev" href="#carouselBanner" role="button" data-slide="prev">
+                <div>
+                    <i class="fas fa-chevron-left" style="color: white; font-size: 24px;"></i>
+                </div>
+            </a>
+            <a class="carousel-control-next" href="#carouselBanner" role="button" data-slide="next">
+                <div>
+                    <i class="fas fa-chevron-right" style="color: white; font-size: 24px;"></i>
+                </div>
+            </a>
         </div>
-        <div class="carousel-item">
-            <img src="{% static 'images/banners/banner_2.jpg' %}" class="d-block w-100 h-100" alt="Banner 2" style="object-fit: cover;">
-        </div>
-        <div class="carousel-item">
-            <img src="{% static 'images/banners/banner_3.jpg' %}" class="d-block w-100 h-100" alt="Banner 3" style="object-fit: cover;">
-        </div>
-        <div class="carousel-item">
-            <img src="{% static 'images/banners/banner_4.jpg' %}" class="d-block w-100 h-100" alt="Banner 4" style="object-fit: cover;">
-        </div>
-        <div class="carousel-item">
-            <img src="{% static 'images/banners/banner.jpg' %}" class="d-block w-100 h-100" alt="Banner" style="object-fit: cover;">
-        </div>
-        <div class="carousel-item">
-            <img src="{% static 'images/banners/banner_5.jpg' %}" class="d-block w-100 h-100" alt="Banner 5" style="object-fit: cover;">
-        </div>
-        
     </div>
-    <a class="carousel-control-prev" href="#carouselBanner" role="button" data-slide="prev">
-        <div style="background: rgba(0, 0, 0, 0.9); width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; border-radius: 8px; border: 2px solid white;">
-            <i class="fas fa-chevron-left" style="color: white; font-size: 24px;"></i>
-        </div>
-    </a>
-    <a class="carousel-control-next" href="#carouselBanner" role="button" data-slide="next">
-        <div style="background: rgba(0, 0, 0, 0.9); width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; border-radius: 8px; border: 2px solid white;">
-            <i class="fas fa-chevron-right" style="color: white; font-size: 24px;"></i>
-        </div>
-    </a>
-</div>
-
-</div>
 </div>
 </section>
 <!-- ========================= SECTION MAIN END// ========================= -->
 
-<!-- ========================= SECTION  ========================= -->
+<!-- ========================= SECTION FLASH SALE ========================= -->
 <section class="section-name padding-y-sm">
 <div class="container">
-
-<header class="section-heading">
-{% comment %} <a href="{% url 'store' %}" class="btn btn-outline-primary float-right">See all</a> {% endcomment %}
-<h3 class="section-title popular-title">Popular products</h3>
-</header>
-
-<div class="row">
-{% for product in products %}
-<div class="col-md-3 mb-4">
-    <div class="card shadow-sm border rounded h-100">
-        <a href="{{ product.get_url }}" class="img-wrap">
-            <img src="{{ product.images.url }}" class="card-img-top img-fluid" alt="{{ product.product_name }}">
-        </a>
-        <div class="card-body text-center">
-            <h5 class="card-title mb-2">
-                <a href="{{ product.get_url }}" class="text-dark text-decoration-none">{{ product.product_name }}</a>
-            </h5>
-            <span class="discount-badge">-50%</span>
-            <div class="product-price">
-                {% if product.discounted_price %}
-                    TK {{ product.discounted_price }}
-                    <span class="original-price">TK {{ product.price }}</span>
-                {% else %}
-                TK {{ product.price }}
-                {% endif %}
+    <div class="countdown-container">
+        <h3 class="countdown-title">⚡ Flash Sale Ends In ⚡</h3>
+        <div class="countdown-timer">
+            <div class="countdown-box">
+                <div id="days" class="countdown-number">02</div>
+                <div class="countdown-label">Days</div>
             </div>
-            <a href="{{ product.get_url }}" class="btn btn-outline-primary btn-sm">View Details</a>
+            <div class="countdown-box">
+                <div id="hours" class="countdown-number">23</div>
+                <div class="countdown-label">Hours</div>
+            </div>
+            <div class="countdown-box">
+                <div id="minutes" class="countdown-number">59</div>
+                <div class="countdown-label">Minutes</div>
+            </div>
+            <div class="countdown-box">
+                <div id="seconds" class="countdown-number">35</div>
+                <div class="countdown-label">Seconds</div>
+            </div>
         </div>
     </div>
 </div>
-
-{% endfor %}
-
-</div>
-<a href="{% url 'store' %}" class="btn btn-outline-primary float-right">See all</a>
-
-</div>
-
 </section>
-<!-- ========================= SECTION  END// ========================= -->
+<!-- ========================= SECTION FLASH SALE END// ========================= -->
 
-
-
-<!-- NEW BEST SELLER PRODUCTS SECTION -->
-<section class="section-name padding-y-sm">
+<!-- ========================= SECTION CATEGORIES ========================= -->
+<section class="category-section">
     <div class="container">
-        <header class="section-heading">
-            <h3 class="section-title popular-title">Best Seller Products</h3>
-        </header>
-    
-        <div class="row">
-            {% for product in best_sellers %}
-            <div class="col-md-3 mb-4">
-                <div class="card shadow-sm border rounded h-100">
-                    <a href="{{ product.get_url }}" class="img-wrap">
-                        <img src="{{ product.images.url }}" class="card-img-top img-fluid" alt="{{ product.product_name }}">
+        <h2 class="section-title popular-title">Explore Categories</h2>
+        <div class="category-grid">
+            <div class="category-item">
+                <a href="{% url 'products_by_category' 'men' %}">
+                    <img src="{% static 'images/men_collection.jpg' %}" alt="Men's Collection">
+                    <h4>Men's Collection</h4>
+                </a>
+            </div>
+            <div class="category-item">
+                <a href="{% url 'products_by_category' 'women' %}">
+                    <img src="{% static 'images/women_collection.jpg' %}" alt="Women's Collection">
+                    <h4>Women's Collection</h4>
+                </a>
+            </div>
+            <div class="category-item">
+                <a href="{% url 'products_by_category' 'kids' %}">
+                    <img src="{% static 'images/kids_collection.jpg' %}" alt="Kids' Collection">
+                    <h4>Kids' Collection</h4>
+                </a>
+            </div>
+            <div class="category-item">
+                <a href="{% url 'products_by_category' 'accessories' %}">
+                    <img src="{% static 'images/accessories_collection.jpg' %}" alt="Accessories Collection">
+                    <h4>Accessories Collection</h4>
+                </a>
+            </div>
+        </div>
+    </div>
+</section>
+<!-- ========================= SECTION CATEGORIES END// ========================= -->
+
+<!-- ========================= SECTION PRODUCTS ========================= -->
+<section class="section-name padding-y-sm">
+<div class="container">
+    <header class="section-heading">
+        <h3 class="section-title popular-title">Popular Products</h3>
+    </header>
+
+    <div class="row" id="productsGrid">
+        {% for product in products %}
+        <div class="col-md-3 mb-4 product-item {% if forloop.counter > 8 %}hidden{% endif %}">
+            <div class="card shadow-sm">
+                <div class="card-img-wrap" id="productImage{{ product.id }}">
+                    {% if product.category.slug and product.slug %}
+                    <a href="{% url 'product_detail' product.category.slug product.slug %}" data-product-id="{{ product.id }}" data-product-slug="{{ product.slug }}" data-category-slug="{{ product.category.slug }}" class="product-link">
+                        <img src="{{ product.images.url|default:'/static/images/placeholder.jpg' }}" class="card-img-top" alt="{{ product.product_name|default:'Product Image' }}">
                     </a>
-                    <div class="card-body text-center">
-                        <h5 class="card-title mb-2">
-                            <a href="{{ product.get_url }}" class="text-dark text-decoration-none">{{ product.product_name }}</a>
-                        </h5>
-                        <span class="discount-badge">-50%</span>
-                        <div class="product-price">
-                            {% if product.discounted_price %}
-                                TK {{ product.discounted_price }}
-                                <span class="original-price">TK {{ product.price }}</span>
-                            {% else %}
-                                TK {{ product.price }}
-                            {% endif %}
-                        </div>
-                        <a href="{{ product.get_url }}" class="btn btn-outline-primary btn-sm">View Details</a>
+                    {% if product.discounted_price != product.price %}
+                    <span class="discount-badge">-{{ product.discount_percentage|default:'50' }}%</span>
+                    {% endif %}
+                    {% else %}
+                    <span class="text-danger">Missing slug data</span>
+                    <img src="{{ product.images.url|default:'/static/images/placeholder.jpg' }}" class="card-img-top" alt="{{ product.product_name|default:'Product Image' }}">
+                    {% endif %}
+                </div>
+                <div class="card-body">
+                    <h5 class="card-title">
+                        {% if product.category.slug and product.slug %}
+                        <a href="{% url 'product_detail' product.category.slug product.slug %}" class="text-dark text-decoration-none">{{ product.product_name|default:'Unnamed Product' }}</a>
+                        {% else %}
+                        <span class="text-dark">{{ product.product_name|default:'Unnamed Product' }}</span>
+                        {% endif %}
+                    </h5>
+                    <div class="product-price">
+                        {% if product.discounted_price != product.price %}
+                            <span class="discounted">TK {{ product.discounted_price|floatformat:2 }}</span>
+                            <span class="original">TK {{ product.price|floatformat:2 }}</span>
+                        {% else %}
+                            <span class="discounted">TK {{ product.price|floatformat:2 }}</span>
+                        {% endif %}
                     </div>
+                    {% if product.category.slug and product.slug %}
+                    <a href="{% url 'product_detail' product.category.slug product.slug %}" class="btn btn-sm btn-view-details">View Details</a>
+                    {% else %}
+                    <span class="btn btn-sm btn-view-details disabled">View Details</span>
+                    {% endif %}
                 </div>
             </div>
-            {% empty %}
-            <div class="col-12 text-center">
-                <p>No best seller products available at the moment.</p>
-            </div>
-            {% endfor %}
         </div>
-        <a href="{% url 'store' %}" class="btn btn-outline-primary float-right">See all</a>
+        {% empty %}
+        <p>No products available.</p>
+        {% endfor %}
     </div>
+
+    <div class="show-more-container">
+        <div class="products-counter">
+            <span id="currentCount">8</span> of <span id="totalCount">0</span>
+        </div>
+        <button class="show-more-btn" id="showMoreBtn" data-count="0">Show More Products</button>
+    </div>
+</div>
 </section>
-<!-- BEST SELLER SECTION END// -->
+<!-- ========================= SECTION PRODUCTS END// ========================= -->
 
+<!-- ========================= SECTION BEST SELLERS ========================= -->
+<section class="section-name padding-y-sm">
+<div class="container">
+    <header class="section-heading">
+        <h3 class="section-title popular-title">Best Seller Products</h3>
+    </header>
 
+    <div class="row" id="bestSellersGrid">
+        {% for product in best_sellers %}
+        <div class="col-md-3 mb-4 product-item {% if forloop.counter > 6 %}hidden{% endif %}">
+            <div class="card shadow-sm">
+                <div class="card-img-wrap" id="bestSeller{{ product.id }}">
+                    {% if product.category.slug and product.slug %}
+                    <a href="{% url 'product_detail' product.category.slug product.slug %}" data-product-id="{{ product.id }}" data-product-slug="{{ product.slug }}" data-category-slug="{{ product.category.slug }}" class="product-link">
+                        <img src="{{ product.images.url|default:'/static/images/placeholder.jpg' }}" class="card-img-top" alt="{{ product.product_name|default:'Product Image' }}">
+                    </a>
+                    {% if product.discounted_price != product.price %}
+                    <span class="discount-badge">-{{ product.discount_percentage|default:'50' }}%</span>
+                    {% endif %}
+                    <span class="badge-best-seller">Best Seller</span>
+                    {% else %}
+                    <span class="text-danger">Missing slug data</span>
+                    <img src="{{ product.images.url|default:'/static/images/placeholder.jpg' }}" class="card-img-top" alt="{{ product.product_name|default:'Product Image' }}">
+                    {% endif %}
+                </div>
+                <div class="card-body">
+                    <h5 class="card-title">
+                        {% if product.category.slug and product.slug %}
+                        <a href="{% url 'product_detail' product.category.slug product.slug %}" class="text-dark text-decoration-none">{{ product.product_name|default:'Unnamed Product' }}</a>
+                        {% else %}
+                        <span class="text-dark">{{ product.product_name|default:'Unnamed Product' }}</span>
+                        {% endif %}
+                    </h5>
+                    <div class="product-price">
+                        {% if product.discounted_price != product.price %}
+                            <span class="discounted">TK {{ product.discounted_price|floatformat:2 }}</span>
+                            <span class="original">TK {{ product.price|floatformat:2 }}</span>
+                        {% else %}
+                            <span class="discounted">TK {{ product.price|floatformat:2 }}</span>
+                        {% endif %}
+                    </div>
+                    {% if product.category.slug and product.slug %}
+                    <a href="{% url 'product_detail' product.category.slug product.slug %}" class="btn btn-sm btn-view-details">View Details</a>
+                    {% else %}
+                    <span class="btn btn-sm btn-view-details disabled">View Details</span>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <p>No best seller products available at the moment.</p>
+        {% endfor %}
+    </div>
 
+    <div class="show-more-container">
+        <div class="products-counter">
+            <span id="bestSellersCurrentCount">8</span> of <span id="bestSellersTotalCount">0</span>
+        </div>
+        <button class="show-more-btn" id="showMoreBestSellersBtn" data-count="0">Show More Products</button>
+    </div>
+</div>
+</section>
+<!-- ========================= SECTION BEST SELLERS END// ========================= -->
 
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const productsPerPage = 6;
 
+    // Popular Products
+    const products = document.querySelectorAll('#productsGrid .product-item');
+    const showMoreBtn = document.getElementById('showMoreBtn');
+    const currentCountEl = document.getElementById('currentCount');
+    const totalCountEl = document.getElementById('totalCount');
+    let currentlyShown = productsPerPage;
 
-</body>
-</html>
+    // Best Seller Products
+    const bestSellers = document.querySelectorAll('#bestSellersGrid .product-item');
+    const showMoreBestSellersBtn = document.getElementById('showMoreBestSellersBtn');
+    const bestSellersCurrentCountEl = document.getElementById('bestSellersCurrentCount');
+    const bestSellersTotalCountEl = document.getElementById('bestSellersTotalCount');
+    let bestSellersCurrentlyShown = productsPerPage;
+
+    // Initialize counters for Popular Products
+    totalCountEl.textContent = products.length;
+    updatePopularCounters();
+
+    // Initialize counters for Best Seller Products
+    bestSellersTotalCountEl.textContent = bestSellers.length;
+    updateBestSellersCounters();
+
+    // Hide Popular Products button if no more products to show
+    if (products.length <= productsPerPage) {
+        showMoreBtn.style.display = 'none';
+    } else {
+        const remaining = products.length - currentlyShown;
+        showMoreBtn.setAttribute('data-count', remaining);
+        showMoreBtn.classList.add('has-more');
+    }
+
+    // Hide Best Seller Products button if no more products to show
+    if (bestSellers.length <= productsPerPage) {
+        showMoreBestSellersBtn.style.display = 'none';
+    } else {
+        const remaining = bestSellers.length - bestSellersCurrentlyShown;
+        showMoreBestSellersBtn.setAttribute('data-count', remaining);
+        showMoreBestSellersBtn.classList.add('has-more');
+    }
+
+    function updatePopularCounters() {
+        currentCountEl.textContent = currentlyShown;
+        const remaining = products.length - currentlyShown;
+        showMoreBtn.setAttribute('data-count', remaining > 0 ? remaining : '');
+        
+        if (remaining > 0) {
+            showMoreBtn.classList.add('has-more');
+            showMoreBtn.textContent = `Show More Products (${remaining})`;
+        } else {
+            showMoreBtn.classList.remove('has-more');
+            showMoreBtn.style.display = 'none';
+        }
+    }
+
+    function updateBestSellersCounters() {
+        bestSellersCurrentCountEl.textContent = bestSellersCurrentlyShown;
+        const remaining = bestSellers.length - bestSellersCurrentlyShown;
+        showMoreBestSellersBtn.setAttribute('data-count', remaining > 0 ? remaining : '');
+        
+        if (remaining > 0) {
+            showMoreBestSellersBtn.classList.add('has-more');
+            showMoreBestSellersBtn.textContent = `Show More Products (${remaining})`;
+        } else {
+            showMoreBestSellersBtn.classList.remove('has-more');
+            showMoreBestSellersBtn.style.display = 'none';
+        }
+    }
+
+    // Show More for Popular Products
+    showMoreBtn.addEventListener('click', function() {
+        this.style.transform = 'scale(0.95)';
+        setTimeout(() => this.style.transform = '', 150);
+
+        const start = currentlyShown;
+        const end = Math.min(currentlyShown + productsPerPage, products.length);
+        
+        for (let i = start; i < end; i++) {
+            setTimeout(() => {
+                const product = products[i];
+                product.classList.remove('hidden');
+                product.classList.add('revealing');
+                
+                product.addEventListener('animationend', function() {
+                    this.classList.remove('revealing');
+                }, { once: true });
+            }, (i - start) * 150);
+        }
+
+        currentlyShown = end;
+        updatePopularCounters();
+    });
+
+    // Show More for Best Seller Products
+    showMoreBestSellersBtn.addEventListener('click', function() {
+        this.style.transform = 'scale(0.95)';
+        setTimeout(() => this.style.transform = '', 150);
+
+        const start = bestSellersCurrentlyShown;
+        const end = Math.min(bestSellersCurrentlyShown + productsPerPage, bestSellers.length);
+        
+        for (let i = start; i < end; i++) {
+            setTimeout(() => {
+                const product = bestSellers[i];
+                product.classList.remove('hidden');
+                product.classList.add('revealing');
+                
+                product.addEventListener('animationend', function() {
+                    this.classList.remove('revealing');
+                }, { once: true });
+            }, (i - start) * 150);
+        }
+
+        bestSellersCurrentlyShown = end;
+        updateBestSellersCounters();
+    });
+
+    // Make entire card-img-wrap clickable
+    document.querySelectorAll('.card-img-wrap').forEach(imgWrap => {
+        imgWrap.addEventListener('click', function(e) {
+            const link = this.querySelector('a.product-link');
+            if (link) {
+                window.location.href = link.href;
+            }
+        });
+    });
+
+    // Debug click events
+    document.querySelectorAll('.card-img-wrap a').forEach(link => {
+        link.addEventListener('click', (e) => {
+            console.log('Image clicked:', link.href, 'Product ID:', link.dataset.productId, 'Category Slug:', link.dataset.categorySlug, 'Product Slug:', link.dataset.productSlug);
+        });
+    });
+
+    // Store viewed product in local storage
+    function storeRecentlyViewed(productId) {
+        let recentlyViewed = JSON.parse(localStorage.getItem('recentlyViewed') || '[]');
+        if (!recentlyViewed.includes(productId)) {
+            recentlyViewed.unshift(productId);
+            recentlyViewed = recentlyViewed.slice(0, 6);
+            localStorage.setItem('recentlyViewed', JSON.stringify(recentlyViewed));
+        }
+    }
+
+    // Store current product view
+    document.querySelectorAll('.product-link').forEach(link => {
+        link.addEventListener('click', function() {
+            const productId = this.dataset.productId;
+            if (productId) {
+                storeRecentlyViewed(productId);
+            }
+        });
+    });
+
+    // Set the date we're counting down to (2 days from now)
+    var countDownDate = new Date();
+    countDownDate.setDate(countDownDate.getDate() + 2);
+
+    // Update the countdown every 1 second
+    var x = setInterval(function() {
+        var now = new Date().getTime();
+        var distance = countDownDate - now;
+
+        var days = Math.floor(distance / (1000 * 60 * 60 * 24));
+        var hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+        var minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+        var seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+        document.getElementById("days").innerHTML = days.toString().padStart(2, '0');
+        document.getElementById("hours").innerHTML = hours.toString().padStart(2, '0');
+        document.getElementById("minutes").innerHTML = minutes.toString().padStart(2, '0');
+        document.getElementById("seconds").innerHTML = seconds.toString().padStart(2, '0');
+
+        if (distance < 0) {
+            clearInterval(x);
+            document.getElementById("days").innerHTML = "00";
+            document.getElementById("hours").innerHTML = "00";
+            document.getElementById("minutes").innerHTML = "00";
+            document.getElementById("seconds").innerHTML = "00";
+        }
+    }, 1000);
+});
+</script>
 
 {% endblock %}
