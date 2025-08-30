@@ -13,5 +13,18 @@ urlpatterns = [
     
     path('orders/', include('orders.urls')),
 
+    path('returns/', views.returns, name='returns'),
+    path('shipping/', views.shipping, name='shipping'),
+    path('offers/', views.offers, name='offers'),
+    path('size-charts/', views.size_charts, name='size_charts'),
+    path('gift-vouchers/', views.gift_vouchers, name='gift_vouchers'),
+    path('about/', views.about, name='about'),
+    path('privacy/', views.privacy, name='privacy'),
+    path('terms/', views.terms, name='terms'),
+    path('warranty/', views.warranty, name='warranty'),
+
+
+    path('brand/<slug:brand_slug>/', views.products_by_brand, name='products_by_brand'),  # New URL
+
 
 ] + static(settings.MEDIA_URL, document_root = settings.MEDIA_ROOT)

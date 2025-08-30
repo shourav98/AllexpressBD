@@ -1,0 +1,17 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<main class="container my-5">
+    <br>
+    <br>
+    <h2 class="text-warning mb-4">Gift Vouchers</h2>
+    <div class="card p-4">
+        <h5 class="text-uppercase font-weight-bold">Buy a Gift Voucher</h5>
+        <p>Purchase gift vouchers starting at $25. Redeemable online or in-store.</p>
+        <p>Vouchers are valid for one year from the date of purchase.</p>
+        <a href="{% url 'home' %}" class="btn btn-warning">Buy Now</a>
+    </div>
+</main>
+
+{% endblock content %}

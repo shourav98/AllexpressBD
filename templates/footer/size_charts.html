@@ -1,0 +1,35 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<main class="container mt-5 mb-5">  {# Increased spacing with mt-5 and mb-5 #}
+    <br>
+    <br>
+    <h2 class="text-warning mb-4">Size Charts</h2>
+    <div class="card p-4">
+        <h5 class="text-uppercase font-weight-bold">Men's Footwear</h5>
+        <table class="table table-bordered">
+            <thead>
+                <tr><th>US</th><th>EU</th><th>UK</th></tr>
+            </thead>
+            <tbody>
+                <tr><td>7</td><td>40</td><td>6</td></tr>
+                <tr><td>8</td><td>41</td><td>7</td></tr>
+                <tr><td>9</td><td>42</td><td>8</td></tr>
+            </tbody>
+        </table>
+        <h5 class="text-uppercase font-weight-bold mt-4">Women's Footwear</h5>
+        <table class="table table-bordered">
+            <thead>
+                <tr><th>US</th><th>EU</th><th>UK</th></tr>
+            </thead>
+            <tbody>
+                <tr><td>5</td><td>35</td><td>3</td></tr>
+                <tr><td>6</td><td>36</td><td>4</td></tr>
+                <tr><td>7</td><td>37</td><td>5</td></tr>
+            </tbody>
+        </table>
+    </div>
+</main>
+
+{% endblock content %}

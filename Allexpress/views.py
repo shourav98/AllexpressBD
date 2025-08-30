@@ -1,84 +1,162 @@
-# from django.shortcuts import render
-# from store.models import Product, ReviewRating
-# def home(request):
-#     products = Product.objects.all().filter(is_available=True).order_by('created_date')    
-#     for product in products:
-#         reviews = ReviewRating.objects.filter(product_id=product.id, status=True)
-#     context = {
-#         'products': products,
-#         'reviews': reviews,
-#     }
-#     return render(request, 'home.html', context)
-
-
-
-
-
-# Allexpress/views.py (assumed)
-from django.shortcuts import render
+from django.shortcuts import render, get_object_or_404
 from store.models import Product
 from django.db.models import Count, Q
 from decimal import Decimal
 from orders.models import OrderProduct
+from django.core.paginator import Paginator
+from category.models import Category
+from category.models import Brand
 
 
 
 def home(request):
-    products = Product.objects.filter(is_available=True).order_by('id')
+    """Home page with search results, categories, and popular/best seller products."""
+    # Search functionality
+    keyword = request.GET.get("keyword")
+    search_products = []
+    if keyword:
+        search_products = Product.objects.filter(
+            Q(description__icontains=keyword) | Q(product_name__icontains=keyword),
+            is_available=True
+        ).order_by("created_date")
 
-    # Calculate discounted price for each product
-    for product in products:
-        product.discounted_price = product.price * Decimal('0.5')
+    # Price range filter
+    min_price = request.GET.get("min_price")
+    max_price = request.GET.get("max_price")
+    
+    # Get all active products
+    products = Product.objects.filter(is_available=True)
+    
+    # Apply price range filter if provided
+    if min_price and max_price:
+        products = products.filter(discounted_price__gte=min_price, discounted_price__lte=max_price)
+    
+    products = products.order_by('-created_date')
 
-    # Debug: Check OrderProduct entries
-    order_products = OrderProduct.objects.filter(ordered=True)
-    print(f"Home - OrderProduct entries with ordered=True: {order_products.count()}")
-    for op in order_products:
-        print(f"Home - OrderProduct: Product={op.product.product_name}, Order is_ordered={op.order.is_ordered}, Product is_available={op.product.is_available}, OrderProduct ID={op.id}")
+    # Paginate products
+    paginator = Paginator(products, 12)  # Show 12 products per page
+    page = request.GET.get('page')
+    paged_products = paginator.get_page(page)
 
-    # Fetch best seller products
-    best_sellers = Product.objects.filter(
-        is_available=True,
-        orderproduct__ordered=True,
-        orderproduct__order__is_ordered=True
-    ).annotate(
-        sales_count=Count('orderproduct')
-    ).order_by('-sales_count', '-created_date')[:6]
+    # Get best seller products (updated to 8)
+    best_sellers = (
+        Product.objects.filter(
+            is_available=True,
+            orderproduct__ordered=True,
+            orderproduct__order__is_ordered=True,
+        )
+        .annotate(sales_count=Count("orderproduct"))
+        .order_by("-sales_count", "-created_date")[:8]  # Changed from 6 to 8
+    )
 
-    # Debug: Check best sellers
-    print(f"Home - Best sellers count: {best_sellers.count()}")
-    for product in best_sellers:
-        print(f"Home - Best seller: {product.product_name}, Sales count: {product.sales_count}")
+    # Apply price range filter to best sellers if provided
+    if min_price and max_price:
+        best_sellers = best_sellers.filter(discounted_price__gte=min_price, discounted_price__lte=max_price)
 
-    # Add discounted price to best sellers
-    for product in best_sellers:
-        product.discounted_price = product.price * Decimal('0.5')
+    # Get all parent categories
+    parent_categories = Category.objects.filter(parent__isnull=True, is_active=True)
+    brands = Brand.objects.filter(is_active=True)  # Fetch all active brands
 
     context = {
-        'products': products,
-        'best_sellers': best_sellers,
+        "products": paged_products,
+        "search_products": search_products,
+        "best_sellers": best_sellers,
+        "parent_categories": parent_categories,
+        "brands": brands,  # Add brands to context
+        "min_price": min_price,
+        "max_price": max_price,
     }
-    return render(request, 'home.html', context)
+    return render(request, "home.html", context)
 
-# from django.shortcuts import render
-# from store.models import Product, ReviewRating
+
+
+
+
+def products_by_brand(request, brand_slug):
+    """Display products filtered by brand."""
+    brand = get_object_or_404(Brand, slug=brand_slug)
+    products = Product.objects.filter(brand=brand, is_available=True)
+
+    # Apply filters
+    size = request.GET.get('size')
+    price_min = request.GET.get('price_min', 0)
+    price_max = request.GET.get('price_max', 5000)
+
+    if size:
+        products = products.filter(variation__variation_category='size', variation__variation_value=size)
+    
+    try:
+        price_min = Decimal(price_min)
+        price_max = Decimal(price_max)
+        products = products.filter(price__gte=price_min, price__lte=price_max)
+    except (ValueError, TypeError):
+        pass
+
+    # Pagination
+    paginator = Paginator(products, 12)
+    page = request.GET.get('page')
+    paged_products = paginator.get_page(page)
+
+    # Search functionality
+    keyword = request.GET.get("keyword")
+    search_products = []
+    if keyword:
+        search_products = Product.objects.filter(
+            Q(description__icontains=keyword) | Q(product_name__icontains=keyword),
+            is_available=True, brand=brand
+        ).order_by("created_date")
+        paged_products = search_products
+
+    # Get recently viewed products
+    if 'recently_viewed' not in request.session:
+        request.session['recently_viewed'] = []
+    recent_product_ids = request.session['recently_viewed']
+    recent_products = Product.objects.filter(id__in=recent_product_ids, is_available=True)[:8]
+
+    parent_categories = Category.objects.filter(parent__isnull=True, is_active=True)
+    brands = Brand.objects.filter(is_active=True)  # For navigation
+
+    context = {
+        "products": paged_products,
+        "product_count": products.count(),
+        "brand": brand,
+        "parent_categories": parent_categories,
+        "brands": brands,
+        "search_products": search_products,
+        "recent_products": recent_products,
+    }
+    return render(request, "store/store.html", context)
+
+
+
+
+
+def returns(request):
+    return render(request, 'footer/returns.html')
+
+def shipping(request):
+    return render(request, 'footer/shipping.html')
+
+def offers(request):
+    return render(request, 'footer/offers.html')
+
+def size_charts(request):
+    return render(request, 'footer/size_charts.html')
+
+def gift_vouchers(request):
+    return render(request, 'footer/gift_vouchers.html')
 
 # def home(request):
-#     products = Product.objects.filter(is_available=True).order_by('created_date')    
-#     reviews = []  # Initialize reviews as an empty list
-#     for product in products:
-#         product_reviews = ReviewRating.objects.filter(product_id=product.id, status=True)
-#         reviews.append(product_reviews)  # Collect reviews for each product
-        
-        
-#     for product in products:
-#         if product.discount_percentage:  # Check if discount is available
-#             # Apply discount if the field exists
-#             product.discounted_price = product.price * (1 - product.discount_percentage / 100)
-#         else:
-#             product.discounted_price = None
-#     context = {
-#         'products': products,
-#         'reviews': reviews,  # Pass the collected reviews
-#     }
-#     return render(request, 'home.html', context)
+#     return render(request, 'home.html')
+
+def about(request):
+    return render(request, 'footer/about.html')
+
+def privacy(request):
+    return render(request, 'footer/privacy.html')
+
+def terms(request):
+    return render(request, 'footer/terms.html')
+
+def warranty(request):
+    return render(request, 'footer/warranty.html')

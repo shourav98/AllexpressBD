@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Purchase, Returns & Exchanges</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            line-height: 1.5;
+        }
+        .container {
+            width: 80%;
+            margin: 20px auto;
+            text-align: left;
+        }
+        h2 {
+            text-align: left;
+            margin-bottom: 10px;
+            font-size: 18px;
+        }
+        h4 {
+            margin-top: 15px;
+            margin-bottom: 5px;
+            font-size: 14px;
+        }
+        ul {
+            list-style-type: disc;
+            padding-left: 20px;
+            margin-top: 0;
+            margin-bottom: 10px;
+        }
+        li {
+            margin-bottom: 5px;
+        }
+        p {
+            margin-top: 0;
+            margin-bottom: 10px;
+        }
+        .small {
+            font-size: 10px;
+            font-style: italic;
+        }
+        a {
+            color: blue;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        strong {
+            color: #000;
+        }
+    </style>
+</head>
+<body>
+    {% extends 'base.html' %}
+
+    {% block content %}
+    <div class="container">
+        <br>
+        <br>
+        <h2>Purchase, Returns & Exchanges</h2>
+
+        <h4>Purchase Policy</h4>
+        <ul>
+            <li>Purchase is possible for available items only</li>
+            <li>All of our product’s prices are inclusive of VAT & TAX</li>
+            <li>Prices may vary in physical stores and online due to promotions</li>
+            <li>You may exchange your purchase for the same or a higher-priced product</li>
+            <li>No claim will be entertained without a valid cash memo</li>
+            <li>Altered purchases cannot be exchanged</li>
+            <li>Discounted purchases are not eligible for exchange</li>
+            <li>Repair/Replacement is at the discretion of the company</li>
+            <li>For queries, email <a href="mailto:customercare@ariyanfootwear.com">customercare@ariyanfootwear.com</a> or call +880175800061</li>
+        </ul>
+
+        <h4>Return Policy</h4>
+        <p>We do not currently offer returns or refunds — only exchanges are accepted.</p>
+
+        <h4>30-Day Exchange Policy</h4>
+
+        <h4>Exchange Period</h4>
+        <p>You have <strong>30 DAYS TO EXCHANGE*</strong>. Item must be returned in its original condition.</p>
+        <p class="small">*Goods must be unworn and in the original packaging with the invoice. Damaged boxes or shoes may not qualify.</p>
+
+        <h4>Exchange during Sale Promotion</h4>
+        <p>No exchanges will be processed during sale promotions. Requests will be handled after the sale ends.</p>
+
+        <h4>Exchange for Promotional/Clearance/Discounted Products</h4>
+        <p>These items are generally not eligible for exchange unless stated otherwise.</p>
+
+        <h4>Exchange in Store</h4>
+        <ul>
+            <li>You may exchange items at any AF Emporium store</li>
+            <li>Check the <a href="/shops">Shops</a> page to find your nearest store</li>
+            <li><strong>Steps:</strong>
+                <ul>
+                    <li>Take the item to any AF store</li>
+                    <li>You <strong>must</strong> have your original receipt</li>
+                </ul>
+            </li>
+        </ul>
+
+        <h4>How long will the exchange take?</h4>
+        <p>Exchange orders are sent within 14 working days after receiving the item, subject to availability. If you're in a hurry, place a new order and return the incorrect one later.</p>
+
+        <h4>Faulty or Wrong Item</h4>
+        <p>If you receive a faulty or wrong item, contact our team with your order number, name, address, and whether you'd prefer a refund or exchange. We'll arrange a pickup.</p>
+
+        <h4>Undelivered Parcels</h4>
+        <p>If your parcel is returned due to customer error, future orders may require advance payment.</p>
+
+        <h4>Delivery Information</h4>
+        <ul>
+            <li>Inside Dhaka: 3 business days</li>
+            <li>Outside Dhaka: 5 business days</li>
+            <li>Delivery Fee: Free in all areas</li>
+            <li>Orders after 1 PM are processed the next working day</li>
+        </ul>
+        <p>We use third-party couriers. If damage occurs, we will compensate accordingly.</p>
+    </div>
+    {% endblock %}
+</body>
+</html>
