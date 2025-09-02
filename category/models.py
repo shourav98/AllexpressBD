@@ -31,20 +31,7 @@ class Category(models.Model):
         if self.parent:
             return f"{self.parent.category_name} > {self.category_name}"
         return self.category_name
-
-    def save(self, *args, **kwargs):
-        if not self.slug:
-            self.slug = slugify(self.category_name)
-        super(Category, self).save(*args, **kwargs)
-
-    def is_parent(self):
-        return self.parent is None
-
-    def get_subcategories(self):
-        return self.subcategories.filter(is_active=True)
     
-
-
 
 
 class Brand(models.Model):

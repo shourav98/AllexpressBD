@@ -3,31 +3,96 @@
 {% block content %}
 
 <style>
-    .price-filter-form {
-        display: flex;
-        flex-direction: column;
+    .price-range-section {
+        text-align: center;
+        padding: 2rem 0;
+    }
+
+    .price-range-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
         gap: 1rem;
+        margin-top: 1rem;
+        max-width: 1000px;
+        margin-left: auto;
+        margin-right: auto;
     }
 
-    .price-filter-form .option-item {
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
+    .price-range-item {
+        text-align: center;
+        transition: transform 0.4s ease, background-color 0.4s ease, box-shadow 0.4s ease;
+        background-color: #fff;
         padding: 0.5rem;
-        background: #fff;
-        border-radius: 4px;
-    }
-
-    .price-filter-form .option-item input[type="radio"] {
-        margin: 0;
-    }
-
-    .price-filter-form .option-item label {
+        border-radius: 10px;
         cursor: pointer;
-        font-size: 0.9rem;
-        color: #333;
     }
-    /* Responsive styles */
+
+    .price-range-item:hover {
+        transform: scale(1.05) translateY(-5px);
+        background-color: #f8f9fa;
+        box-shadow: 0 6px 12px rgba(0,0,0,0.15);
+    }
+
+    .price-range-item img {
+        width: 100%;
+        height: 195px;
+        object-fit: cover;
+        border-radius: 10px;
+        border: 5px solid #fff;
+        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        transition: transform 0.4s ease, opacity 0.4s ease, box-shadow 0.4s ease, border-color 0.4s ease;
+    }
+
+    .price-range-item:hover img {
+        transform: scale(1.1);
+        opacity: 0.95;
+        box-shadow: 0 6px 12px rgba(0,0,0,0.2);
+        border-color: #ff6200;
+    }
+
+    .price-range-item h4 {
+        margin-top: 0.5rem;
+        font-size: 1.2rem;
+        color: #ff6200;
+        text-decoration: none;
+        transition: color 0.4s ease, transform 0.4s ease;
+    }
+
+    .price-range-item:hover h4 {
+        color: #e55a00;
+        transform: translateY(-3px);
+    }
+
+    @media (max-width: 768px) {
+        .price-range-grid {
+            grid-template-columns: repeat(2, 1fr);
+            max-width: 500px;
+        }
+
+        .price-range-item img {
+            height: 150px;
+        }
+
+        .price-range-item h4 {
+            font-size: 1rem;
+        }
+    }
+
+    @media (max-width: 576px) {
+        .price-range-grid {
+            grid-template-columns: 1fr;
+            max-width: 350px;
+        }
+
+        .price-range-item img {
+            height: 120px;
+        }
+
+        .price-range-item h4 {
+            font-size: 0.9rem;
+        }
+    }
+
     .product-container {
         max-width: 1400px;
         margin: 0 auto;
@@ -40,211 +105,6 @@
         }
     }
 
-    /* Gallery */
-    .gallery-section {
-        background: #f9f9f9;
-        border-radius: 20px;
-        padding: 1rem;
-    }
-
-    .main-image {
-        position: relative;
-        margin-bottom: 1rem;
-    }
-
-    .main-image img {
-        width: 100%;
-        height: auto;
-        max-height: 600px;
-        object-fit: cover;
-        border-radius: 12px;
-    }
-
-    .gallery-thumbs {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
-        gap: 0.5rem;
-    }
-
-    @media (max-width: 576px) {
-        .gallery-thumbs {
-            grid-template-columns: repeat(auto-fill, minmax(60px, 1fr));
-        }
-    }
-
-    .thumb {
-        aspect-ratio: 1;
-        border-radius: 8px;
-        cursor: pointer;
-        border: 2px solid transparent;
-        transition: all 0.3s ease;
-    }
-
-    .thumb:hover {
-        border-color: #ff6200;
-        transform: scale(1.05);
-    }
-
-    .thumb.active {
-        border-color: #222;
-    }
-
-    .thumb img {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-        border-radius: 6px;
-    }
-
-    /* Product Info */
-    .popular-title {
-        text-align: center;
-        margin-top: 10px;
-        margin-bottom: 10px;
-        font-size: 2.5rem;
-        transition: color 0.4s ease;
-    }
-
-    .popular-title:hover {
-        color: #ff6200;
-    }
-
-    .product-info {
-        padding: 1rem;
-    }
-
-    .product-brand {
-        text-transform: uppercase;
-        letter-spacing: 2px;
-        font-size: clamp(0.8rem, 2vw, 0.9rem);
-        color: #666;
-        margin-bottom: 0.5rem;
-    }
-
-    .product-name {
-        font-size: clamp(1.5rem, 4vw, 2.5rem);
-        font-weight: 500;
-        margin-bottom: 1rem;
-        color: #111;
-    }
-
-    .product-price {
-        text-align: center;
-        margin-bottom: 1.5rem;
-    }
-
-    .product-price .discounted {
-        font-size: clamp(1.1rem, 2vw, 1.6rem);
-        font-weight: 500;
-        color: red;
-        display: block;
-    }
-
-    .product-price .original {
-        font-size: clamp(0.9rem, 1.5vw, 1.2rem);
-        color: #999;
-        text-decoration: line-through;
-        display: block;
-    }
-
-    .product-description {
-        font-size: clamp(0.9rem, 2vw, 1.1rem);
-        line-height: 1.6;
-        color: #444;
-        margin-bottom: 1.5rem;
-    }
-
-    /* Options */
-    .option-group {
-        margin-bottom: 1.5rem;
-    }
-
-    .option-label {
-        font-size: 0.9rem;
-        text-transform: uppercase;
-        letter-spacing: 1px;
-        margin-bottom: 0.5rem;
-        color: #666;
-    }
-
-    .color-options,
-    .size-options {
-        display: flex;
-        gap: 0.5rem;
-        flex-wrap: wrap;
-    }
-
-    .option-item {
-        min-width: 40px;
-        height: 40px;
-        border: 1px solid #ddd;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        cursor: pointer;
-        transition: all 0.3s ease;
-    }
-
-    .option-item:hover {
-        border-color: #ff6200;
-        transform: scale(1.1);
-    }
-
-    @media (min-width: 768px) {
-        .option-item {
-            min-width: 50px;
-            height: 50px;
-        }
-    }
-
-    /* Add to Cart */
-    .add-to-cart {
-        width: 100%;
-        padding: 1rem;
-        background: #111;
-        color: white;
-        border: none;
-        border-radius: 4px;
-        font-size: clamp(0.9rem, 2vw, 1rem);
-        text-transform: uppercase;
-        letter-spacing: 1px;
-        cursor: pointer;
-        transition: background-color 0.4s ease, transform 0.4s ease, box-shadow 0.4s ease;
-    }
-
-    .add-to-cart:hover {
-        background-color: #333;
-        transform: scale(1.05);
-        box-shadow: 0 4px 10px rgba(0,0,0,0.2);
-    }
-
-    /* Related Products */
-    .related-products {
-        margin-top: 2rem;
-    }
-
-    .related-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 1rem;
-        padding: 0 1rem;
-    }
-
-    .related-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-        gap: 1rem;
-        padding: 0 1rem;
-    }
-
-    @media (max-width: 576px) {
-        .related-grid {
-            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-        }
-    }
-
-    /* Carousel Responsive Styles */
     .intro-banner-wrap {
         margin: 0 auto;
         max-width: 100%;
@@ -271,7 +131,6 @@
         }
     }
 
-    /* Carousel Controls */
     .carousel-control-prev,
     .carousel-control-next {
         transition: transform 0.4s ease, background-color 0.4s ease;
@@ -301,7 +160,6 @@
         transform: scale(1.1);
     }
 
-    /* Product Grid Responsive */
     .row {
         margin: 0 -0.5rem;
         display: flex;
@@ -347,7 +205,7 @@
     .card-img-wrap {
         position: relative;
         width: 100%;
-        padding-top: 100%; /* 1:1 aspect ratio */
+        padding-top: 100%;
         overflow: hidden;
         cursor: pointer;
     }
@@ -464,7 +322,6 @@
         box-shadow: 0 4px 10px rgba(0,0,0,0.2);
     }
 
-    /* Countdown Styles */
     .countdown-container {
         background: linear-gradient(135deg, #ff4e50, #c0a41a);
         padding: 2rem;
@@ -575,10 +432,21 @@
         }
     }
 
-    /* Category Section Styles */
     .category-section {
         text-align: center;
         padding: 2rem 0;
+    }
+
+    .popular-title {
+        text-align: center;
+        margin-top: 10px;
+        margin-bottom: 10px;
+        font-size: 2.5rem;
+        transition: color 0.4s ease;
+    }
+
+    .popular-title:hover {
+        color: #ff6200;
     }
 
     .category-grid {
@@ -668,106 +536,18 @@
         }
     }
 
-    /* Price Range Filter Section Styles */
-    .price-range-section {
-        text-align: center;
-        padding: 2rem 0;
-        background: #f9f9f9;
-        border-radius: 15px;
-        margin: 2rem 0;
-    }
-
-    .price-range-grid {
-        display: grid;
-        grid-template-columns: repeat(3, 1fr);
-        gap: 1rem;
-        max-width: 1000px;
-        margin-left: auto;
-        margin-right: auto;
-        padding: 0 1rem;
-    }
-
-    .price-range-item {
-        position: relative;
-        text-align: center;
-        transition: transform 0.4s ease, box-shadow 0.4s ease;
-        border-radius: 10px;
-        overflow: hidden;
-        cursor: pointer;
-    }
-
-    .price-range-item:hover {
-        transform: scale(1.05) translateY(-5px);
-        box-shadow: 0 6px 12px rgba(0,0,0,0.15);
-    }
-
-    .price-range-item img {
-        width: 100%;
-        height: 200px;
-        object-fit: cover;
-        border-radius: 10px;
-        transition: transform 0.4s ease, opacity 0.4s ease;
-    }
-
-    .price-range-item:hover img {
-        transform: scale(1.1);
-        opacity: 0.95;
-    }
-
-    .price-range-overlay {
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background: rgba(0, 0, 0, 0.5);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        color: white;
-        font-size: 1.2rem;
-        font-weight: 600;
-        text-transform: uppercase;
-        letter-spacing: 1px;
-        opacity: 0;
-        transition: opacity 0.4s ease;
-    }
-
-    .price-range-item:hover .price-range-overlay {
-        opacity: 1;
-    }
-
-    @media (max-width: 768px) {
-        .price-range-grid {
-            grid-template-columns: repeat(2, 1fr);
-            max-width: 500px;
-        }
-
-        .price-range-item img {
-            height: 150px;
-        }
-
-        .price-range-overlay {
-            font-size: 1rem;
-        }
+    .social-media-section .category-grid {
+        grid-template-columns: repeat(2, 1fr);
+        max-width: 500px;
     }
 
     @media (max-width: 576px) {
-        .price-range-grid {
-            grid-template-columns: 1fr;
-            max-width: 300px;
-        }
-
-        .price-range-item img {
-            height: 120px;
-        }
-
-        .price-range-overlay {
-            font-size: 0.9rem;
+        .social-media-section .category-grid {
+            grid-template-columns: repeat(2, 1fr);
+            max-width: 350px;
         }
     }
 
-    /* Show More Button Styles */
     .show-more-container {
         display: flex;
         justify-content: center;
@@ -789,7 +569,7 @@
         letter-spacing: 0.5px;
         font-weight: 500;
     }
-    
+
     .products-counter span {
         color: #ffffff;
         font-weight: 600;
@@ -975,7 +755,6 @@
     {% endif %}
 
     <div class="intro-banner-wrap">
-        <!-- Carousel Banner Section -->
         <div id="carouselBanner" class="carousel slide" data-ride="carousel" data-interval="5000">
             <ol class="carousel-indicators">
                 <li data-target="#carouselBanner" data-slide-to="0" class="active"></li>
@@ -1045,27 +824,27 @@
 </section>
 <!-- ========================= SECTION FLASH SALE END// ========================= -->
 
-<!-- ========================= SECTION PRICE RANGE FILTER ========================= -->
+<!-- ========================= SECTION PRICE RANGE ========================= -->
 <section class="price-range-section">
     <div class="container">
         <h2 class="section-title popular-title">Shop by Price Range</h2>
         <div class="price-range-grid">
-            <div class="price-range-item" data-min="0" data-max="1000">
-                <img src="{% static 'images/price_range_low.jpg' %}" alt="Low Price Range">
-                <div class="price-range-overlay">TK 0 - TK 1000</div>
+            <div class="price-range-item" data-price-min="0" data-price-max="1000">
+                <img src="{% static 'images/price-low.jpg' %}" alt="Low Price Range">
+                <h4>Tk 0 - Tk 1000</h4>
             </div>
-            <div class="price-range-item" data-min="1000" data-max="3000">
-                <img src="{% static 'images/price_range_mid.jpg' %}" alt="Mid Price Range">
-                <div class="price-range-overlay">TK 1000 - TK 3000</div>
+            <div class="price-range-item" data-price-min="1001" data-price-max="3000">
+                <img src="{% static 'images/price-mid.jpg' %}" alt="Mid Price Range">
+                <h4>Tk 1001 - Tk 3000</h4>
             </div>
-            <div class="price-range-item" data-min="3000" data-max="10000">
-                <img src="{% static 'images/price_range_high.jpg' %}" alt="High Price Range">
-                <div class="price-range-overlay">TK 3000 - TK 10000</div>
+            <div class="price-range-item" data-price-min="3001" data-price-max="10000">
+                <img src="{% static 'images/price-high.jpg' %}" alt="High Price Range">
+                <h4>Tk 3001 - Tk 10000</h4>
             </div>
         </div>
     </div>
 </section>
-<!-- ========================= SECTION PRICE RANGE FILTER END// ========================= -->
+<!-- ========================= SECTION PRICE RANGE END// ========================= -->
 
 <!-- ========================= SECTION CATEGORIES ========================= -->
 <section class="category-section">
@@ -1101,6 +880,48 @@
 </section>
 <!-- ========================= SECTION CATEGORIES END// ========================= -->
 
+<!-- ========================= SECTION BRANDS ========================= -->
+<section class="category-section">
+    <div class="container">
+        <h2 class="section-title popular-title">Explore Brands</h2>
+        <div class="category-grid">
+            {% for brand in brands %}
+            <div class="category-item">
+                <a href="{% url 'products_by_brand' brand.slug %}">
+                    <img src="{{ brand.brand_image.url|default:'/static/images/placeholder.jpg' }}" alt="{{ brand.brand_name }}">
+                    <h4>{{ brand.brand_name }}</h4>
+                </a>
+            </div>
+            {% empty %}
+            <p>No brands available.</p>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+<!-- ========================= SECTION BRANDS END// ========================= -->
+
+<!-- ========================= SECTION SOCIAL MEDIA ========================= -->
+<section class="social-media-section">
+    <div class="container">
+        <h2 class="section-title popular-title">Follow Us on Social Media</h2>
+        <div class="category-grid">
+            <div class="category-item">
+                <a href="https://www.facebook.com/ariyafootwear" target="_blank" rel="noopener noreferrer">
+                    <img src="{% static 'images/facebook_icon.jpg' %}" alt="Facebook">
+                    <h4>Facebook</h4>
+                </a>
+            </div>
+            <div class="category-item">
+                <a href="https://www.instagram.com/ariyafootwear" target="_blank" rel="noopener noreferrer">
+                    <img src="{% static 'images/instagram_icon.jpg' %}" alt="Instagram">
+                    <h4>Instagram</h4>
+                </a>
+            </div>
+        </div>
+    </div>
+</section>
+<!-- ========================= SECTION SOCIAL MEDIA END// ========================= -->
+
 <!-- ========================= SECTION PRODUCTS ========================= -->
 <section class="section-name padding-y-sm">
 <div class="container">
@@ -1114,23 +935,23 @@
             <div class="card shadow-sm">
                 <div class="card-img-wrap" id="productImage{{ product.id }}">
                     {% if product.category.slug and product.slug %}
-                    <a href="{% url 'product_detail' product.category.slug product.slug %}" data-product-id="{{ product.id }}" data-product-slug="{{ product.slug }}" data-category-slug="{{ product.category.slug }}" class="product-link">
-                        <img src="{{ product.images.url|default:'/static/images/placeholder.jpg' }}" class="card-img-top" alt="{{ product.product_name|default:'Product Image' }}">
-                    </a>
-                    {% if product.discounted_price != product.price %}
-                    <span class="discount-badge">-{{ product.discount_percentage|default:'50' }}%</span>
-                    {% endif %}
+                        <a href="{% url 'product_detail' product.category.slug product.slug %}" data-product-id="{{ product.id }}" data-product-slug="{{ product.slug }}" data-category-slug="{{ product.category.slug }}" class="product-link">
+                            <img src="{{ product.images.url|default:'/static/images/placeholder.jpg' }}" class="card-img-top" alt="{{ product.product_name|default:'Product Image' }}">
+                        </a>
+                        {% if product.discounted_price != product.price %}
+                            <span class="discount-badge">-{{ product.discount_percentage|default:'50' }}%</span>
+                        {% endif %}
                     {% else %}
-                    <span class="text-danger">Missing slug data</span>
-                    <img src="{{ product.images.url|default:'/static/images/placeholder.jpg' }}" class="card-img-top" alt="{{ product.product_name|default:'Product Image' }}">
+                        <span class="text-danger">Missing slug data</span>
+                        <img src="{{ product.images.url|default:'/static/images/placeholder.jpg' }}" class="card-img-top" alt="{{ product.product_name|default:'Product Image' }}">
                     {% endif %}
                 </div>
                 <div class="card-body">
                     <h5 class="card-title">
                         {% if product.category.slug and product.slug %}
-                        <a href="{% url 'product_detail' product.category.slug product.slug %}" class="text-dark text-decoration-none">{{ product.product_name|default:'Unnamed Product' }}</a>
+                            <a href="{% url 'product_detail' product.category.slug product.slug %}" class="text-dark text-decoration-none">{{ product.product_name|default:'Unnamed Product' }}</a>
                         {% else %}
-                        <span class="text-dark">{{ product.product_name|default:'Unnamed Product' }}</span>
+                            <span class="text-dark">{{ product.product_name|default:'Unnamed Product' }}</span>
                         {% endif %}
                     </h5>
                     <div class="product-price">
@@ -1142,9 +963,9 @@
                         {% endif %}
                     </div>
                     {% if product.category.slug and product.slug %}
-                    <a href="{% url 'product_detail' product.category.slug product.slug %}" class="btn btn-sm btn-view-details">View Details</a>
+                        <a href="{% url 'product_detail' product.category.slug product.slug %}" class="btn btn-sm btn-view-details">View Details</a>
                     {% else %}
-                    <span class="btn btn-sm btn-view-details disabled">View Details</span>
+                        <span class="btn btn-sm btn-view-details disabled">View Details</span>
                     {% endif %}
                 </div>
             </div>
@@ -1164,28 +985,6 @@
 </section>
 <!-- ========================= SECTION PRODUCTS END// ========================= -->
 
-
-<!-- ========================= SECTION BRANDS ========================= -->
-<section class="category-section"> <!-- Reuse category-section class for identical styling -->
-    <div class="container">
-        <h2 class="section-title popular-title">Explore Brands</h2>
-        <div class="category-grid"> <!-- Reuse category-grid class -->
-            {% for brand in brands %}
-            <div class="category-item"> <!-- Reuse category-item class -->
-                <a href="{% url 'products_by_brand' brand.slug %}">
-                    <img src="{{ brand.brand_image.url|default:'/static/images/placeholder.jpg' }}" alt="{{ brand.brand_name }}">
-                    <h4>{{ brand.brand_name }}</h4>
-                </a>
-            </div>
-            {% empty %}
-            <p>No brands available.</p>
-            {% endfor %}
-        </div>
-    </div>
-</section>
-<!-- ========================= SECTION BRANDS END// ========================= -->
-
-
 <!-- ========================= SECTION BEST SELLERS ========================= -->
 <section class="section-name padding-y-sm">
 <div class="container">
@@ -1199,24 +998,24 @@
             <div class="card shadow-sm">
                 <div class="card-img-wrap" id="bestSeller{{ product.id }}">
                     {% if product.category.slug and product.slug %}
-                    <a href="{% url 'product_detail' product.category.slug product.slug %}" data-product-id="{{ product.id }}" data-product-slug="{{ product.slug }}" data-category-slug="{{ product.category.slug }}" class="product-link">
-                        <img src="{{ product.images.url|default:'/static/images/placeholder.jpg' }}" class="card-img-top" alt="{{ product.product_name|default:'Product Image' }}">
-                    </a>
-                    {% if product.discounted_price != product.price %}
-                    <span class="discount-badge">-{{ product.discount_percentage|default:'50' }}%</span>
-                    {% endif %}
-                    <span class="badge-best-seller">Best Seller</span>
+                        <a href="{% url 'product_detail' product.category.slug product.slug %}" data-product-id="{{ product.id }}" data-product-slug="{{ product.slug }}" data-category-slug="{{ product.category.slug }}" class="product-link">
+                            <img src="{{ product.images.url|default:'/static/images/placeholder.jpg' }}" class="card-img-top" alt="{{ product.product_name|default:'Product Image' }}">
+                        </a>
+                        {% if product.discounted_price != product.price %}
+                            <span class="discount-badge">-{{ product.discount_percentage|default:'50' }}%</span>
+                        {% endif %}
+                        <span class="badge-best-seller">Best Seller</span>
                     {% else %}
-                    <span class="text-danger">Missing slug data</span>
-                    <img src="{{ product.images.url|default:'/static/images/placeholder.jpg' }}" class="card-img-top" alt="{{ product.product_name|default:'Product Image' }}">
+                        <span class="text-danger">Missing slug data</span>
+                        <img src="{{ product.images.url|default:'/static/images/placeholder.jpg' }}" class="card-img-top" alt="{{ product.product_name|default:'Product Image' }}">
                     {% endif %}
                 </div>
                 <div class="card-body">
                     <h5 class="card-title">
                         {% if product.category.slug and product.slug %}
-                        <a href="{% url 'product_detail' product.category.slug product.slug %}" class="text-dark text-decoration-none">{{ product.product_name|default:'Unnamed Product' }}</a>
+                            <a href="{% url 'product_detail' product.category.slug product.slug %}" class="text-dark text-decoration-none">{{ product.product_name|default:'Unnamed Product' }}</a>
                         {% else %}
-                        <span class="text-dark">{{ product.product_name|default:'Unnamed Product' }}</span>
+                            <span class="text-dark">{{ product.product_name|default:'Unnamed Product' }}</span>
                         {% endif %}
                     </h5>
                     <div class="product-price">
@@ -1228,9 +1027,9 @@
                         {% endif %}
                     </div>
                     {% if product.category.slug and product.slug %}
-                    <a href="{% url 'product_detail' product.category.slug product.slug %}" class="btn btn-sm btn-view-details">View Details</a>
+                        <a href="{% url 'product_detail' product.category.slug product.slug %}" class="btn btn-sm btn-view-details">View Details</a>
                     {% else %}
-                    <span class="btn btn-sm btn-view-details disabled">View Details</span>
+                        <span class="btn btn-sm btn-view-details disabled">View Details</span>
                     {% endif %}
                 </div>
             </div>
@@ -1242,48 +1041,13 @@
 
     <div class="show-more-container">
         <div class="products-counter">
-            <span id="bestSellersCurrentCount">8</span> of <span id="bestSellersTotalCount">0</span>
+            <span id="bestSellersCurrentCount">6</span> of <span id="bestSellersTotalCount">0</span>
         </div>
         <button class="show-more-btn" id="showMoreBestSellersBtn" data-count="0">Show More Products</button>
     </div>
 </div>
 </section>
 <!-- ========================= SECTION BEST SELLERS END// ========================= -->
-
-
-<!-- ========================= SECTION SOCIAL MEDIA ========================= -->
-<section class="social-media-section">
-    <div class="container">
-        <h2 class="section-title popular-title">Follow Us on Social Media</h2>
-        <div class="category-grid">
-            <div class="category-item">
-                <a href="https://www.facebook.com/ariyafootwear" target="_blank" rel="noopener noreferrer">
-                    <img src="{% static 'images/facebook_icon.jpg' %}" alt="Facebook">
-                    <h4>Facebook</h4>
-                </a>
-            </div>
-            <div class="category-item">
-                <a href="https://www.instagram.com/yourpage" target="_blank" rel="noopener noreferrer">
-                    <img src="{% static 'images/instagram_icon.jpg' %}" alt="Instagram">
-                    <h4>Instagram</h4>
-                </a>
-            </div>
-            <div class="category-item">
-                <a href="https://www.facebook.com/ariyafootwear" target="_blank" rel="noopener noreferrer">
-                    <img src="{% static 'images/facebook_icon.jpg' %}" alt="Facebook">
-                    <h4>Facebook</h4>
-                </a>
-            </div>
-            <div class="category-item">
-                <a href="https://www.instagram.com/yourpage" target="_blank" rel="noopener noreferrer">
-                    <img src="{% static 'images/instagram_icon.jpg' %}" alt="Instagram">
-                    <h4>Instagram</h4>
-                </a>
-            </div>
-        </div>
-    </div>
-</section>
-<!-- ========================= SECTION SOCIAL MEDIA END// ========================= -->
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
@@ -1409,8 +1173,8 @@ document.addEventListener('DOMContentLoaded', function() {
     const priceRangeItems = document.querySelectorAll('.price-range-item');
     priceRangeItems.forEach(item => {
         item.addEventListener('click', function() {
-            const minPrice = parseFloat(this.dataset.min);
-            const maxPrice = parseFloat(this.dataset.max);
+            const minPrice = parseFloat(this.dataset.priceMin);
+            const maxPrice = parseFloat(this.dataset.priceMax);
 
             // Reset visibility for all products
             products.forEach(product => {
@@ -1467,6 +1231,12 @@ document.addEventListener('DOMContentLoaded', function() {
                     }, { once: true });
                 }
             });
+
+            // Update URL with price range
+            const url = new URL(window.location);
+            url.searchParams.set('min_price', minPrice);
+            url.searchParams.set('max_price', maxPrice);
+            window.history.pushState({}, '', url);
         });
     });
 

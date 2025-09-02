@@ -6,6 +6,9 @@ from django.db.models import Avg, Count
 from django.utils.text import slugify
 from django.core.exceptions import ValidationError
 from category.models import Brand
+from django.urls import NoReverseMatch
+
+
 # Create your models here.
 
 
@@ -20,11 +23,13 @@ class Product(models.Model):
     images = models.ImageField(upload_to='photos/products')
     stock = models.IntegerField()
     is_available = models.BooleanField(default=True)
-    category = models.ForeignKey(Category, on_delete=models.CASCADE)
+    # category = models.ForeignKey(Category, on_delete=models.CASCADE)
+    category = models.ForeignKey(Category, on_delete=models.CASCADE, related_name='products', null=True, blank=True)
     created_date = models.DateTimeField(auto_now_add=True)
     modified_date = models.DateTimeField(auto_now=True)
 
     brand = models.ForeignKey(Brand, on_delete=models.CASCADE, null=True, blank=True)  # New field
+
 
     @property
     def discounted_price(self):
@@ -32,8 +37,17 @@ class Product(models.Model):
             return self.price - (self.price * self.discount_percentage / 100)
         return self.price
 
+    # def get_url(self):
+    #     return reverse('product_detail', args=[self.category.slug, self.slug])
+
     def get_url(self):
-        return reverse('product_detail', args=[self.category.slug, self.slug])
+        try:
+            if self.category:
+                return reverse("product_detail", args=[self.category.slug, self.slug])
+            elif self.brand:
+                return reverse("product_detail_by_brand", args=[self.brand.slug, self.slug])
+        except NoReverseMatch:
+            return "#"
 
     def __str__(self):
         return self.product_name
@@ -45,14 +59,41 @@ class Product(models.Model):
     def countReview(self):
         reviews = ReviewRating.objects.filter(product=self, status=True).aggregate(count=Count('id'))
         return int(reviews['count']) if reviews['count'] is not None else 0
+    
 
     def save(self, *args, **kwargs):
         if not self.slug:
             self.slug = slugify(self.product_name)
-        # Optional: Ensure products are only assigned to subcategories
-        if self.category.is_parent():
-            raise ValidationError("Products can only be assigned to subcategories, not parent categories.")
+
+        # Require at least a category or brand
+        if not self.category and not self.brand:
+            raise ValidationError("A product must be assigned to a category or a brand.")
+
+        # If category is selected, ensure it's a subcategory
+        if self.category:
+            if self.category.parent is None:
+                raise ValidationError(
+                    "Products can only be assigned to subcategories, not parent categories."
+                )
+
         super(Product, self).save(*args, **kwargs)
+    
+
+    # def save(self, *args, **kwargs):
+    #     if not self.slug:
+    #         self.slug = slugify(self.product_name)
+    #     # Check if the category has a parent (i.e., is a subcategory)
+    #     if self.category.parent is None:  # Changed from self.category.parent() to self.category.parent is None
+    #         raise ValidationError("Products can only be assigned to subcategories, not parent categories.")
+    #     super(Product, self).save(*args, **kwargs)
+
+    # def save(self, *args, **kwargs):
+    #     if not self.slug:
+    #         self.slug = slugify(self.product_name)
+    #     # Optional: Ensure products are only assigned to subcategories
+    #     if self.category.parent():
+    #         raise ValidationError("Products can only be assigned to subcategories, not parent categories.")
+    #     super(Product, self).save(*args, **kwargs)
     
 
 

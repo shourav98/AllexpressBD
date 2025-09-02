@@ -238,8 +238,25 @@
     }
 
     .option-item input:checked + span {
-        color: white;
         background: #007bff;
+        color: white;
+        width: 100%;
+        height: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 6px;
+    }
+
+    .option-item.selected {
+        border-color: #007bff;
+        transform: translateY(-2px);
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+
+    .option-item.selected span {
+        background: #007bff;
+        color: white;
         width: 100%;
         height: 100%;
         display: flex;
@@ -263,27 +280,8 @@
         border: none;
         border-radius: 8px;
         font-size: 1.2rem;
-        font-weight: 600;
         cursor: pointer;
         transition: all 0.3s ease;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-    }
-
-    .quantity-btn.plus {
-        margin-right: 1rem; /* Spacing after the + button */
-    }
-
-    .quantity-btn:hover {
-        background: #e55a00;
-        transform: translateY(-2px);
-    }
-
-    .quantity-btn:disabled {
-        background: #ccc;
-        cursor: not-allowed;
-        transform: none;
     }
 
     .quantity-input {
@@ -300,6 +298,21 @@
     .quantity-input:focus {
         border-color: #007bff;
         box-shadow: 0 0 0 2px rgba(0,123,255,0.25);
+    }
+
+    .quantity-btn.plus {
+        margin-right: 1rem;
+    }
+
+    .quantity-btn:hover {
+        background: #e55a00;
+        transform: translateY(-2px);
+    }
+
+    .quantity-btn:disabled {
+        background: #ccc;
+        cursor: not-allowed;
+        transform: none;
     }
 
     .add-to-cart {
@@ -576,7 +589,6 @@
         color: #ffd700;
     }
 
-    /* Styles for product details heading */
     .product-details-heading {
         font-size: clamp(1.8rem, 4vw, 2.2rem);
         font-weight: 600;
@@ -586,7 +598,6 @@
         text-transform: capitalize;
     }
 
-    /* New styles for tabs and content */
     .tabs-section {
         margin-top: 2rem;
         padding: 1rem;
@@ -681,7 +692,7 @@
     @media (max-width: 768px) {
         .product-container {
             padding: 0.5rem;
-            margin-top: 80px; /* Adjusted for smaller screens */
+            margin-top: 80px;
         }
 
         .product-info {
@@ -717,7 +728,7 @@
         }
 
         .quantity-btn.plus {
-            margin-right: 0.8rem; /* Adjusted spacing for smaller screens */
+            margin-right: 0.8rem;
         }
 
         .quantity-input {
@@ -740,6 +751,9 @@
 <div class="product-container">
     <!-- Product Details Heading -->
     <h2 class="product-details-heading">Product Details: {{ single_product.product_name|default:'Unnamed Product' }}</h2>
+
+    <!-- Category Navigation -->
+
 
     <div class="row">
         <!-- Image Modal -->
@@ -786,6 +800,7 @@
                         {% if single_product.discounted_price != single_product.price %}
                             <span class="discounted">TK {{ single_product.discounted_price|floatformat:2 }}</span>
                             <span class="original">TK {{ single_product.price|floatformat:2 }}</span>
+
                         {% else %}
                             <span class="discounted">TK {{ single_product.price|floatformat:2 }}</span>
                         {% endif %}
@@ -797,6 +812,8 @@
                         {% endfor %}
                         <span>({{ single_product.countReview }} Reviews)</span>
                     </div>
+
+                    <p class="product-description mb-4">{{ single_product.description|default:"No description available" }}</p>
 
                     <div class="option-group">
                         <div class="option-label">Select Color</div>
@@ -855,8 +872,7 @@
         </div>
     </div>
 
-    <!-- Tabs Section for Description, Terms and Conditions, Size Chart -->
-    <!-- Tabs Section for Description, Terms and Conditions, Size Chart -->
+    <!-- Tabs Section -->
     <div class="tabs-section">
         <div class="tabs-nav">
             <div class="tab-link active" data-tab="description">Description</div>
@@ -868,7 +884,6 @@
         <div class="tab-content active" id="description">
             <h4>Description</h4>
             <p>{{ single_product.description|default:"No description available" }}</p>
-
             <h4>Style Tips</h4>
             <p>
                 {{ single_product.style_tips|default:'Pair these casual sneakers with a brown long-sleeve shirt and white chinos for a classic and clean look. Add a watch and a leather strap to finish off the outfit and give it a fresh, modern twist—perfect for any casual outing or weekend get-together!' }}
@@ -877,202 +892,185 @@
 
         <!-- Terms and Conditions Tab -->
         <div class="tab-content" id="terms">
-            <!DOCTYPE html>
-            <html lang="en">
-            <head>
-                <meta charset="UTF-8">
-                <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                <title>Terms of Use</title>
-                
-            </head>
-            <body>
-                <div class="container" style="margin-top: 2px; margin-bottom: 10px;">
-                    <br>
-                    <br>
-                    <h1>Terms of Use</h1>
-                    <div class="section">
-                        <h2>1. GENERAL PROVISIONS</h2>
+            <h4>Terms and Conditions</h4>
+            <div class="section">
+                <h2>1. GENERAL PROVISIONS</h2>
+                <ol>
+                    <li>1.1. This User Agreement (hereinafter - the Agreement) refers to the website of the AF Emporium Ltd located at ariyan footwear ltd, and all relevant sites linked to www.ariyanfootwear.com.</li>
+                    <li>1.2. The site of the Bay Emporium Ltd (hereinafter referred to as the Site) is the property of ariyan.</li>
+                    <li>1.3. This Agreement governs the relationship between the Site Administration of the ariyan footwear Ltd (hereinafter referred to as the Site Administration) and the User of this Site.</li>
+                    <li>1.4. The site administration reserves the right at any time to change, add or delete paragraphs of this Agreement without notifying the User.</li>
+                    <li>1.5. Continued use of the Site by the User means acceptance of the Agreement and changes made to this Agreement.</li>
+                    <li>1.6. The user is personally responsible for checking this Agreement for changes in it.</li>
+                </ol>
+            </div>
+            <div class="section">
+                <h2>2. DEFINITIONS OF TERMS</h2>
+                <ol>
+                    <li>2.1. The following terms have the following meanings for the purposes of this Agreement:
                         <ol>
-                            <li>1.1. This User Agreement (hereinafter - the Agreement) refers to the website of the AF Emporium Ltd located at ariyan footwear ltd, and all relevant sites linked to www.ariyanfootwear.com.</li>
-                            <li>1.2. The site of the Bay Emporium Ltd (hereinafter referred to as the Site) is the property of ariyan.</li>
-                            <li>1.3. This Agreement governs the relationship between the Site Administration of the ariyan footwear Ltd (hereinafter referred to as the Site Administration) and the User of this Site.</li>
-                            <li>1.4. The site administration reserves the right at any time to change, add or delete paragraphs of this Agreement without notifying the User.</li>
-                            <li>1.5. Continued use of the Site by the User means acceptance of the Agreement and changes made to this Agreement.</li>
-                            <li>1.6. The user is personally responsible for checking this Agreement for changes in it.</li>
+                            <li>2.1.1 This is an ecommerce store located on the domain name “www.ariyanfootwear.com”, which operates through an Internet resource and related services.</li>
+                            <li>2.1.2. “amarbay.com” - a site containing information about the Goods and allowing you to select, order and (or) purchase the Goods along with delivery facilities.</li>
+                            <li>2.1.3. Administration of the site of the “www.ariyanfootwear.com” – is authorized by the employees on behalf of Bay Emporium Ltd.</li>
+                            <li>2.1.4. A person who has access to the site through the Internet and uses the site is the user of “amarbay.com”.</li>
+                            <li>2.1.5. The content of the “www.ariyanfootwear.com” is - the protected results of intellectual activity, including texts of literary works, their names, preface, annotations, articles, illustrations, covers, musical works with or without text, graphic, textual, photographic, derivative, composite and other works, user interfaces, visual interfaces, trademark names, logos, computer programs, databases, as well as design, structure, choice, coordination, appearance and the location of the Content, which is part of the site and other intellectual property collectively and / or individually contained on the Web Store.</li>
                         </ol>
-                    </div>
-                    <div class="section">
-                        <h2>2. DEFINITIONS OF TERMS</h2>
+                    </li>
+                </ol>
+            </div>
+            <div class="section">
+                <h2>3. SUBJECT OF THE AGREEMENT</h2>
+                <ol>
+                    <li>3.1. The subject of this Agreement is the provision to the User of the “amarbay.com” of access to the Goods and services provided on the Website. “www.ariyanfootwear.com” provides the User with the following types of service (services):
+                        Access to Shoe and Shoe Accessories shopping via online with contents, with the right to purchase (Online), view product info and ask support. Access to search and navigation tools of the online store. providing the User with the opportunity to post messages, comments, user reviews, rate the content of the online store.</li>
+                    <li>3.2. Access to the “amarbay.com” is provided free of charge.</li>
+                    <li>3.3. This Agreement is a public offer. When accessing the Site, the User is considered to have acceded to this Agreement.</li>
+                    <li>3.4. The use of materials and services of the Site is governed by the applicable laws of the Country</li>
+                </ol>
+            </div>
+            <div class="section">
+                <h2>4. RIGHTS AND OBLIGATIONS OF THE PARTIES</h2>
+                <ol>
+                    <li>4.1. The site administration has the right:
                         <ol>
-                            <li>2.1. The following terms have the following meanings for the purposes of this Agreement:
+                            <li>4.1.1. Change the rules for using the Site, as well as change the content of this Site. Changes come into force from the moment the new version of the Agreement is published on the Site.</li>
+                            <li>4.1.2. Restrict access to the Site in case the User violates the terms of this Agreement.</li>
+                        </ol>
+                    </li>
+                    <li>4.2. The user has the right to:
+                        <ol>
+                            <li>4.2.1. Get access to the use of the Site after compliance with the registration requirements.</li>
+                            <li>4.2.2. Use all the services available on the Site, as well as purchase any Goods offered on the Site.</li>
+                            <li>4.2.3. Use the Site exclusively for the purposes and in the manner provided for by the Agreement and not prohibited by the legislation of the Republic of Bangladesh.</li>
+                        </ol>
+                    </li>
+                    <li>4.3. The user of the Site agrees:
+                        <ol>
+                            <li>4.3.1. Provide at the request of the Site Administration additional information that is directly related to the services provided on this Site.</li>
+                            <li>4.3.2. Observe the property and non-property rights of authors and other copyright holders when using the Site.</li>
+                            <li>4.3.3. Do not take actions that may be considered as violating the normal operation of the Site.</li>
+                            <li>4.3.4. Do not disseminate using the Site any confidential and protected by the legislation of the Country information about individuals or legal entities.</li>
+                            <li>4.3.5. Avoid any actions that may result in the violation of the confidentiality of information protected by the legislation of the Country Law.</li>
+                            <li>4.3.6. Do not use the Site to disseminate advertising information, except with the consent of the Site Administration.</li>
+                            <li>4.3.7. Do not use the services of the website of the “www.ariyanfootwear.com” store in order to:
                                 <ol>
-                                    <li>2.1.1 This is an ecommerce store located on the domain name “www.ariyanfootwear.com”, which operates through an Internet resource and related services.</li>
-                                    <li>2.1.2. “amarbay.com” - a site containing information about the Goods and allowing you to select, order and (or) purchase the Goods along with delivery facilities.</li>
-                                    <li>2.1.3. Administration of the site of the “www.ariyanfootwear.com” – is authorized by the employees on behalf of Bay Emporium Ltd.</li>
-                                    <li>2.1.4. A person who has access to the site through the Internet and uses the site is the user of “amarbay.com”.</li>
-                                    <li>2.1.5. The content of the “www.ariyanfootwear.com” is - the protected results of intellectual activity, including texts of literary works, their names, preface, annotations, articles, illustrations, covers, musical works with or without text, graphic, textual, photographic, derivative, composite and other works, user interfaces, visual interfaces, trademark names, logos, computer programs, databases, as well as design, structure, choice, coordination, appearance and the location of the Content, which is part of the site and other intellectual property collectively and / or individually contained on the Web Store.</li>
+                                    <li>4.3.7.1. Uploading content that is illegal violates any rights of third parties; promotes violence, cruelty, hatred and (or) discrimination, on racial national, gender, religious, social grounds; contains inaccurate information and (or) insults addressed to specific individuals, organizations, authorities.</li>
+                                    <li>4.3.7.2. Incentives to commit unlawful acts, as well as assistance to persons whose actions are aimed at violating restrictions and prohibitions in force in the territory of the Country.</li>
+                                    <li>4.3.7.3. Violations of the rights of minors and (or) harm to them in any form.</li>
+                                    <li>4.3.7.4. Infringement of the rights of minorities.</li>
+                                    <li>4.3.7.5. Presenting yourself for another person or representative of an organization and / or community without sufficient rights to do so, including for employees of “www.ariyanfootwear.com”.</li>
+                                    <li>4.3.7.6. Misleading regarding the properties and characteristics of any Product from the catalog of the “amarbay.com” posted on the Site.</li>
+                                    <li>4.3.7.7. Incorrect comparison of the Goods, as well as the formation of a negative attitude towards persons (not) using certain Goods, or the conviction of such persons.</li>
                                 </ol>
                             </li>
                         </ol>
-                    </div>
-                    <div class="section">
-                        <h2>3. SUBJECT OF THE AGREEMENT</h2>
+                    </li>
+                    <li>4.4. The user is prohibited from:
                         <ol>
-                            <li>3.1. The subject of this Agreement is the provision to the User of the “amarbay.com” of access to the Goods and services provided on the Website. “www.ariyanfootwear.com” provides the User with the following types of service (services):
-                                Access to Shoe and Shoe Accessories shopping via online with contents, with the right to purchase (Online), view product info and ask support. Access to search and navigation tools of the online store. providing the User with the opportunity to post messages, comments, user reviews, rate the content of the online store.</li>
-                            <li>3.2. Access to the “amarbay.com” is provided free of charge.</li>
-                            <li>3.3. This Agreement is a public offer. When accessing the Site, the User is considered to have acceded to this Agreement.</li>
-                            <li>3.4. The use of materials and services of the Site is governed by the applicable laws of the Country</li>
+                            <li>4.4.1. Use any devices, programs, procedures, algorithms and methods, automatic devices or equivalent manual processes to access, acquire, copy or track the content of the Site of this Online Store;</li>
+                            <li>4.4.2. Disrupt the proper functioning of the Site;</li>
+                            <li>4.4.3. By any means bypass the navigation structure of the Site to obtain or attempt to obtain any information, documents or materials by any means that are not specifically provided by the services of this Site;</li>
+                            <li>4.4.4. Unauthorized access to the functions of the Site, any other systems or networks related to this Site, as well as to any services offered on the Site;</li>
+                            <li>4.4.5. Violate the security system or authentication on the Site or on any network related to the Site.</li>
+                            <li>4.4.6. Perform a reverse search, track or try to track any information about any other User of the Site.</li>
+                            <li>4.4.7. Use the Site and its Content for any purposes prohibited by the legislation of Country, as well as incite any illegal activity or other activity that violates the rights of the “amarbay.com” or other persons.</li>
                         </ol>
-                    </div>
-                    <hr>
-                    <!-- Continue with the rest of the sections (4. RIGHTS AND OBLIGATIONS OF THE PARTIES, 5. USE OF ARIYANFOOTWEAR SITE, etc.) in a similar manner -->
-                    <div class="section">
-                        <h2>4. RIGHTS AND OBLIGATIONS OF THE PARTIES</h2>
+                    </li>
+                </ol>
+            </div>
+            <div class="section">
+                <h2>5. USE OF ARIYANFOOTWEAR SITE</h2>
+                <ol>
+                    <li>5.1. The Site and the Content included in the Site are owned and operated by the Site Administration.</li>
+                    <li>5.2. The content of the Site cannot be copied, published, reproduced, transmitted or distributed in any way, as well as posted on the global Internet without the prior written consent of the Site Administration.</li>
+                    <li>5.3. The content of the Site is protected by copyright, trademark law, and other intellectual property rights and unfair competition laws.</li>
+                    <li>5.4. The purchase of goods offered on the Site may require the creation of a User account.</li>
+                    <li>5.5. The User is personally responsible for maintaining the confidentiality of account information, including the password, as well as for all activities without exception that are carried out on behalf of the User of the account.</li>
+                    <li>5.6. The user must immediately notify the Site Administration of the unauthorized use of his account or password or any other violation of the security system.</li>
+                    <li>5.7. The site administration has the right to unilaterally cancel the User’s account if it has not been used for more than 3 calendar months in a row without notifying the User.</li>
+                    <li>5.8. This Agreement applies to all additional terms and conditions on the purchase of the Goods and the provision of services provided on the Site.</li>
+                    <li>5.9. The information posted on the Site should not be construed as a change to this Agreement.</li>
+                    <li>5.10. The site administration has the right at any time without notice to the User to make changes to the list of Goods and services offered on the Website, and (or) the prices applicable to such Goods for their sale and (or) the services provided by the Online Store.</li>
+                    <li>5.11. The documents referred to in paragraphs 5.11.1 - 5.11.4 of this Agreement shall be regulated in the relevant part and shall apply to the use of the Site by the User. The following documents are included in this Agreement:
                         <ol>
-                            <li>4.1. The site administration has the right:
-                                <ol>
-                                    <li>4.1.1. Change the rules for using the Site, as well as change the content of this Site. Changes come into force from the moment the new version of the Agreement is published on the Site.</li>
-                                    <li>4.1.2. Restrict access to the Site in case the User violates the terms of this Agreement.</li>
-                                </ol>
-                            </li>
-                            <li>4.2. The user has the right to:
-                                <ol>
-                                    <li>4.2.1. Get access to the use of the Site after compliance with the registration requirements.</li>
-                                    <li>4.2.2. Use all the services available on the Site, as well as purchase any Goods offered on the Site.</li>
-                                    <li>4.2.3. Use the Site exclusively for the purposes and in the manner provided for by the Agreement and not prohibited by the legislation of the Republic of Bangladesh.</li>
-                                </ol>
-                            </li>
-                            <li>4.3. The user of the Site agrees:
-                                <ol>
-                                    <li>4.3.1. Provide at the request of the Site Administration additional information that is directly related to the services provided on this Site.</li>
-                                    <li>4.3.2. Observe the property and non-property rights of authors and other copyright holders when using the Site.</li>
-                                    <li>4.3.3. Do not take actions that may be considered as violating the normal operation of the Site.</li>
-                                    <li>4.3.4. Do not disseminate using the Site any confidential and protected by the legislation of the Country information about individuals or legal entities.</li>
-                                    <li>4.3.5. Avoid any actions that may result in the violation of the confidentiality of information protected by the legislation of the Country Law.</li>
-                                    <li>4.3.6. Do not use the Site to disseminate advertising information, except with the consent of the Site Administration.</li>
-                                    <li>4.3.7. Do not use the services of the website of the “www.ariyanfootwear.com” store in order to:
-                                        <ol>
-                                            <li>4.3.7.1. Uploading content that is illegal violates any rights of third parties; promotes violence, cruelty, hatred and (or) discrimination, on racial national, gender, religious, social grounds; contains inaccurate information and (or) insults addressed to specific individuals, organizations, authorities.</li>
-                                            <li>4.3.7.2. Incentives to commit unlawful acts, as well as assistance to persons whose actions are aimed at violating restrictions and prohibitions in force in the territory of the Country.</li>
-                                            <li>4.3.7.3. Violations of the rights of minors and (or) harm to them in any form.</li>
-                                            <li>4.3.7.4. Infringement of the rights of minorities.</li>
-                                            <li>4.3.7.5. Presenting yourself for another person or representative of an organization and / or community without sufficient rights to do so, including for employees of “www.ariyanfootwear.com”.</li>
-                                            <li>4.3.7.6. Misleading regarding the properties and characteristics of any Product from the catalog of the “amarbay.com” posted on the Site.</li>
-                                            <li>4.3.7.7. Incorrect comparison of the Goods, as well as the formation of a negative attitude towards persons (not) using certain Goods, or the conviction of such persons.</li>
-                                        </ol>
-                                    </li>
-                                </ol>
-                            </li>
-                            <li>4.4. The user is prohibited from:
-                                <ol>
-                                    <li>4.4.1. Use any devices, programs, procedures, algorithms and methods, automatic devices or equivalent manual processes to access, acquire, copy or track the content of the Site of this Online Store;</li>
-                                    <li>4.4.2. Disrupt the proper functioning of the Site;</li>
-                                    <li>4.4.3. By any means bypass the navigation structure of the Site to obtain or attempt to obtain any information, documents or materials by any means that are not specifically provided by the services of this Site;</li>
-                                    <li>4.4.4. Unauthorized access to the functions of the Site, any other systems or networks related to this Site, as well as to any services offered on the Site;</li>
-                                    <li>4.4.5. Violate the security system or authentication on the Site or on any network related to the Site.</li>
-                                    <li>4.4.6. Perform a reverse search, track or try to track any information about any other User of the Site.</li>
-                                    <li>4.4.7. Use the Site and its Content for any purposes prohibited by the legislation of Country, as well as incite any illegal activity or other activity that violates the rights of the “amarbay.com” or other persons.</li>
-                                </ol>
-                            </li>
+                            <li>5.11.1. Privacy policy;</li>
+                            <li>5.11.2. Contract for the sale of goods remotely;</li>
+                            <li>5.11.3. Application for placing an order;</li>
+                            <li>5.11.4. Suggestions and comments.</li>
                         </ol>
-                    </div>
-                    <div class="section">
-                        <h2>5. USE OF ARIYANFOOTWEAR SITE</h2>
+                    </li>
+                    <li>5.12. Any of the documents listed in clause 5.11. of this Agreement may be subject to updating. Changes come into force from the moment they are published on the Site.</li>
+                </ol>
+            </div>
+            <div class="section">
+                <h2>6. RESPONSIBILITY</h2>
+                <ol>
+                    <li>6.1. Any losses that the User may suffer in the event of intentional or reckless violation of any provision of this Agreement, as well as due to unauthorized access to the communications of another User, are not reimbursed by the Site Administration.</li>
+                    <li>6.2. The site administration is not responsible for:
                         <ol>
-                            <li>5.1. The Site and the Content included in the Site are owned and operated by the Site Administration.</li>
-                            <li>5.2. The content of the Site cannot be copied, published, reproduced, transmitted or distributed in any way, as well as posted on the global Internet without the prior written consent of the Site Administration.</li>
-                            <li>5.3. The content of the Site is protected by copyright, trademark law, and other intellectual property rights and unfair competition laws.</li>
-                            <li>5.4. The purchase of goods offered on the Site may require the creation of a User account.</li>
-                            <li>5.5. The User is personally responsible for maintaining the confidentiality of account information, including the password, as well as for all activities without exception that are carried out on behalf of the User of the account.</li>
-                            <li>5.6. The user must immediately notify the Site Administration of the unauthorized use of his account or password or any other violation of the security system.</li>
-                            <li>5.7. The site administration has the right to unilaterally cancel the User’s account if it has not been used for more than 3 calendar months in a row without notifying the User.</li>
-                            <li>5.8. This Agreement applies to all additional terms and conditions on the purchase of the Goods and the provision of services provided on the Site.</li>
-                            <li>5.9. The information posted on the Site should not be construed as a change to this Agreement.</li>
-                            <li>5.10. The site administration has the right at any time without notice to the User to make changes to the list of Goods and services offered on the Website, and (or) the prices applicable to such Goods for their sale and (or) the services provided by the Online Store.</li>
-                            <li>5.11. The documents referred to in paragraphs 5.11.1 - 5.11.4 of this Agreement shall be regulated in the relevant part and shall apply to the use of the Site by the User. The following documents are included in this Agreement:
-                                <ol>
-                                    <li>5.11.1. Privacy policy;</li>
-                                    <li>5.11.2. Contract for the sale of goods remotely;</li>
-                                    <li>5.11.3. Application for placing an order;</li>
-                                    <li>5.11.4. Suggestions and comments.</li>
-                                </ol>
-                            </li>
-                            <li>5.12. Any of the documents listed in clause 5.10. of this Agreement may be subject to updating. Changes come into force from the moment they are published on the Site.</li>
+                            <li>6.2.1. Delays or malfunctions in the process of performing an operation resulting from force majeure, as well as any case of malfunctions in telecommunication, computer, electrical and other related systems.</li>
+                            <li>6.2.2. Actions of transfer systems, banks, payment systems and for delays associated with their work.</li>
+                            <li>6.2.3. The proper functioning of the Site, if the User does not have the necessary technical means for its use, and also does not bear any obligations to provide users with such means.</li>
                         </ol>
-                    </div>
-                    <div class="section">
-                        <h2>6. RESPONSIBILITY</h2>
-                        <ol>
-                            <li>6.1. Any losses that the User may suffer in the event of intentional or reckless violation of any provision of this Agreement, as well as due to unauthorized access to the communications of another User, are not reimbursed by the Site Administration.</li>
-                            <li>6.2. The site administration is not responsible for:
-                                <ol>
-                                    <li>6.2.1. Delays or malfunctions in the process of performing an operation resulting from force manure, as well as any case of malfunctions in telecommunication, computer, electrical and other related systems.</li>
-                                    <li>6.2.2. Actions of transfer systems, banks, payment systems and for delays associated with their work.</li>
-                                    <li>6.2.3. The proper functioning of the Site, if the User does not have the necessary technical means for its use, and also does not bear any obligations to provide users with such means.</li>
-                                </ol>
-                            </li>
-                        </ol>
-                    </div>
-                    <div class="section">
-                        <h2>7. VIOLATION OF THE TERMS AND CONDITIONS OF THE USER AGREEMENT</h2>
-                        <ol>
-                            <li>7.1. The site administration has the right to disclose any information collected about the User of this Site, if the disclosure is necessary in connection with an investigation or complaint regarding the misuse of the Site or to establish (identify) the User who may violate or interfere with the rights of the Site Administration or the rights of other Site Users.</li>
-                            <li>7.2. The site administration has the right to disclose any information about the User that it considers necessary to comply with the provisions of applicable law or court decisions, ensure compliance with the terms of this Agreement, protect the rights or safety of “amarbay.com”, Users.</li>
-                            <li>7.3. The site administration has the right to disclose information about the User if the current legislation of the Country requires or allows such disclosure.</li>
-                            <li>7.4. The site administration has the right to terminate and (or) block access to the Site without prior notice to the User if the User has violated this Agreement or the terms of use of the Site contained in other documents, as well as in case of termination of the Site or due to a technical problem or other problem.</li>
-                            <li>7.5. The site administration is not responsible to the User or third parties for terminating access to the Site in case the User violates any provision of this Agreement or other document containing the conditions for using the Site.</li>
-                        </ol>
-                    </div>
-                    <div class="section">
-                        <h2>8. SETTLEMENT OF DISPUTES</h2>
-                        <ol>
-                            <li>8.1. In the event of any disagreement or disputes between the Parties to this Agreement, a prerequisite before applying to the court is a claim (a written proposal for the voluntary settlement of the dispute).</li>
-                            <li>8.2. The recipient of the claim, within 30 calendar days from the date of its receipt, shall notify the claimant in writing of the results of the consideration of the claim.</li>
-                            <li>8.3. If it is not possible to resolve the dispute on a voluntary basis, any of the Parties is entitled to apply to the court for the protection of their rights that are granted to them by the current legislation of the Country.</li>
-                        </ol>
-                    </div>
-                    <div class="section">
-                        <h2>9. ADDITIONAL TERMS</h2>
-                        <ol>
-                            <li>9.1. The site administration does not accept counter offers from the User regarding changes to this User Agreement.</li>
-                            <li>9.2. User reviews posted on the Site are not confidential information and can be used by the Site Administration without restrictions.</li>
-                        </ol>
-                    </div>
-                </div>
-            </body>
-            </html>
+                    </li>
+                </ol>
+            </div>
+            <div class="section">
+                <h2>7. VIOLATION OF THE TERMS AND CONDITIONS OF THE USER AGREEMENT</h2>
+                <ol>
+                    <li>7.1. The site administration has the right to disclose any information collected about the User of this Site, if the disclosure is necessary in connection with an investigation or complaint regarding the misuse of the Site or to establish (identify) the User who may violate or interfere with the rights of the Site Administration or the rights of other Site Users.</li>
+                    <li>7.2. The site administration has the right to disclose any information about the User that it considers necessary to comply with the provisions of applicable law or court decisions, ensure compliance with the terms of this Agreement, protect the rights or safety of “amarbay.com”, Users.</li>
+                    <li>7.3. The site administration has the right to disclose information about the User if the current legislation of the Country requires or allows such disclosure.</li>
+                    <li>7.4. The site administration has the right to terminate and (or) block access to the Site without prior notice to the User if the User has violated this Agreement or the terms of use of the Site contained in other documents, as well as in case of termination of the Site or due to a technical problem or other problem.</li>
+                    <li>7.5. The site administration is not responsible to the User or third parties for terminating access to the Site in case the User violates any provision of this Agreement or other document containing the conditions for using the Site.</li>
+                </ol>
+            </div>
+            <div class="section">
+                <h2>8. SETTLEMENT OF DISPUTES</h2>
+                <ol>
+                    <li>8.1. In the event of any disagreement or disputes between the Parties to this Agreement, a prerequisite before applying to the court is a claim (a written proposal for the voluntary settlement of the dispute).</li>
+                    <li>8.2. The recipient of the claim, within 30 calendar days from the date of its receipt, shall notify the claimant in writing of the results of the consideration of the claim.</li>
+                    <li>8.3. If it is not possible to resolve the dispute on a voluntary basis, any of the Parties is entitled to apply to the court for the protection of their rights that are granted to them by the current legislation of the Country.</li>
+                </ol>
+            </div>
+            <div class="section">
+                <h2>9. ADDITIONAL TERMS</h2>
+                <ol>
+                    <li>9.1. The site administration does not accept counter offers from the User regarding changes to this User Agreement.</li>
+                    <li>9.2. User reviews posted on the Site are not confidential information and can be used by the Site Administration without restrictions.</li>
+                </ol>
+            </div>
         </div>
 
         <!-- Size Chart Tab -->
         <div class="tab-content" id="size-chart">
-            <main class="container mt-5 mb-5">  {# Increased spacing with mt-5 and mb-5 #}
-            <h2 class="text-warning mb-4">Size Charts</h2>
-            <div class="card p-4">
-                <h5 class="text-uppercase font-weight-bold">Men's Footwear</h5>
-                <table class="table table-bordered">
-                    <thead>
-                        <tr><th>US</th><th>EU</th><th>UK</th></tr>
-                    </thead>
-                    <tbody>
-                        <tr><td>7</td><td>40</td><td>6</td></tr>
-                        <tr><td>8</td><td>41</td><td>7</td></tr>
-                        <tr><td>9</td><td>42</td><td>8</td></tr>
-                    </tbody>
-                </table>
-                <h5 class="text-uppercase font-weight-bold mt-4">Women's Footwear</h5>
-                <table class="table table-bordered">
-                    <thead>
-                        <tr><th>US</th><th>EU</th><th>UK</th></tr>
-                    </thead>
-                    <tbody>
-                        <tr><td>5</td><td>35</td><td>3</td></tr>
-                        <tr><td>6</td><td>36</td><td>4</td></tr>
-                        <tr><td>7</td><td>37</td><td>5</td></tr>
-                    </tbody>
-                </table>
-            </div>
-        </main>
+            <main class="container mt-5 mb-5">
+                <h2 class="text-warning mb-4">Size Charts</h2>
+                <div class="card p-4">
+                    <h5 class="text-uppercase font-weight-bold">Men's Footwear</h5>
+                    <table class="table table-bordered">
+                        <thead>
+                            <tr><th>US</th><th>EU</th><th>UK</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td>7</td><td>40</td><td>6</td></tr>
+                            <tr><td>8</td><td>41</td><td>7</td></tr>
+                            <tr><td>9</td><td>42</td><td>8</td></tr>
+                        </tbody>
+                    </table>
+                    <h5 class="text-uppercase font-weight-bold mt-4">Women's Footwear</h5>
+                    <table class="table table-bordered">
+                        <thead>
+                            <tr><th>US</th><th>EU</th><th>UK</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td>5</td><td>35</td><td>3</td></tr>
+                            <tr><td>6</td><td>36</td><td>4</td></tr>
+                            <tr><td>7</td><td>37</td><td>5</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </main>
         </div>
     </div>
 
@@ -1134,7 +1132,6 @@
             <h3>You May Also Like</h3>
             <a href="{% url 'products_by_category' single_product.category.slug %}" class="btn btn-outline-dark">View All</a>
         </div>
-
         <div class="related-grid" id="relatedProductsGrid">
             {% for product in related_products %}
                 <div class="related-item">

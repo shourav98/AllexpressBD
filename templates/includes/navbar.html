@@ -19,11 +19,7 @@
                 <li class="nav-item">
                     <form action="{% url 'search' %}" class="search-form" method="GET">
                         <div class="search-wrapper">
-                            <input type="text" 
-                                class="search-input" 
-                                placeholder="Search..." 
-                                name="keyword"
-                                autocomplete="off">
+                            <input type="text" class="search-input" placeholder="Search..." name="keyword" autocomplete="off">
                             <button type="submit" class="search-btn">
                                 <i class="fa fa-search"></i>
                             </button>
@@ -57,7 +53,7 @@
 
             <!-- Navbar content -->
             <div class="collapse navbar-collapse order-4" id="navbarContent">
-                <!-- Categories -->
+                <!-- Categories and Brands -->
                 <ul class="navbar-nav mx-auto category-list">
                     {% for parent in parent_categories %}
                         {% if parent.is_active %}
@@ -96,11 +92,7 @@
                     <li class="nav-item d-none d-lg-block">
                         <form action="{% url 'search' %}" class="search-form" method="GET">
                             <div class="search-wrapper">
-                                <input type="text" 
-                                    class="search-input" 
-                                    placeholder="Search for anything..." 
-                                    name="keyword"
-                                    autocomplete="off">
+                                <input type="text" class="search-input" placeholder="Search for anything..." name="keyword" autocomplete="off">
                                 <button type="submit" class="search-btn">
                                     <i class="fa fa-search"></i>
                                 </button>
@@ -111,7 +103,7 @@
                     <li class="nav-item d-none d-lg-block">
                         {% if user.id is none %}
                             <a href="{% url 'login' %}" class="nav-link auth-link">
-                                <i class="fa fa-user me-1"></i> SignIn
+                                <i class="fa fa-user me-1"></i> Sign In
                             </a>
                         {% else %}
                             <a class="nav-link user-link" href="{% url 'dashboard' %}">
@@ -138,6 +130,26 @@
 
     <style>
         /* Navbar styles */
+        .navbar {
+            padding: 0.5rem 0;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            z-index: 1000;
+            transition: top 0.3s ease;
+        }
+
+        #mainNavbar {
+            top: 40px; /* Below announcement bar initially */
+        }
+
+        .navbar-brand img {
+            height: 40px;
+            transition: transform 0.3s ease;
+        }
+
+        .navbar-brand img:hover {
+            transform: scale(1.05);
+        }
+
         .category-list .nav-link {
             font-weight: 600;
             text-transform: uppercase;
@@ -152,7 +164,6 @@
             border-bottom: 2px solid #ff6200;
         }
 
-        /* Subcategory dropdown */
         .subcategory-dropdown {
             position: absolute;
             left: 50%;
@@ -172,14 +183,12 @@
             display: flex;
         }
 
-        /* Subcategory row */
         .subcategory-row {
             display: flex;
             flex-direction: column;
             gap: 0.5rem;
         }
 
-        /* Subcategory items */
         .subcategory-item {
             font-size: 0.95rem;
             padding: 0.5rem 1rem;
@@ -195,24 +204,6 @@
             color: #fff;
         }
 
-        #mainNavbar {
-            top: 40px;
-        }
-
-        .navbar-brand {
-            flex: 0 0 auto;
-        }
-
-        .navbar-brand img {
-            height: 40px;
-            transition: transform 0.3s ease;
-        }
-
-        .navbar-brand img:hover {
-            transform: scale(1.05);
-        }
-
-        /* Search styles */
         .search-form {
             max-width: 400px;
             margin: 0 1rem;
@@ -221,10 +212,10 @@
         .search-wrapper {
             display: flex;
             align-items: center;
-            background: #f5f5f5;
+            background: #fff;
             border: 1px solid #ddd;
             border-radius: 20px;
-            padding: 0.2rem 0.4rem;
+            padding: 0.4rem 0.8rem;
             transition: all 0.3s ease;
         }
 
@@ -255,7 +246,6 @@
             color: #ff6200;
         }
 
-        /* Account and cart styles */
         .auth-link, .user-link {
             color: #333;
             font-weight: 500;
@@ -307,7 +297,7 @@
         /* Responsive styles */
         @media (max-width: 991px) {
             .navbar {
-                top: 30px;
+                top: 30px; /* Smaller announcement bar on mobile */
             }
 
             .navbar-toggler {
@@ -333,7 +323,7 @@
             }
 
             .search-wrapper {
-                padding: 0.2rem 0.4rem;
+                padding: 0.3rem 0.6rem;
             }
 
             .search-input {

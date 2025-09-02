@@ -515,7 +515,7 @@
     <!-- Subcategories (if parent category) -->
     {% if category and category.is_parent %}
         <div class="subcategories-section">
-           
+            <h3>Subcategories</h3>
             <div class="subcategories-list">
                 {% for subcategory in categories %}
                     <a href="{% url 'products_by_category' subcategory.slug %}" class="subcategory-item">{{ subcategory.category_name }}</a>
@@ -549,19 +549,7 @@
                                     {% endif %}
                                 </li>
                             {% endfor %}
-                            <!-- Brands -->
-                            <li class="nav-item position-relative">
-                                <a class="nav-link" href="#">Brands</a>
-                                <div class="subcategory-dropdown">
-                                    <div class="subcategory-row">
-                                        {% for brand in brands %}
-                                            <a href="{% url 'products_by_brand' brand.slug %}" class="subcategory-item">{{ brand.brand_name }}</a>
-                                        {% endfor %}
-                                    </div>
-                                </div>
-                            </li>
                         </ul>
-                        
                     </div>
                 </div>
 
@@ -602,7 +590,7 @@
                                     <option value="4001">Tk 4001</option>
                                 </select>
                                 <select class="price-input" name="price_max" id="price_max">
-                                    < fa-chevron-down">Tk 500</option>
+                                    <option value="500">Tk 500</option>
                                     <option value="1000">Tk 1000</option>
                                     <option value="1500">Tk 1500</option>
                                     <option value="2000">Tk 2000</option>
@@ -749,7 +737,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
-    // Price range automatic filtering
+    // Price range handling
     const priceMinSelect = document.getElementById('price_min');
     const priceMaxSelect = document.getElementById('price_max');
     const currentPriceMin = '{{ request.GET.price_min|default:"0" }}';
@@ -763,14 +751,30 @@ document.addEventListener('DOMContentLoaded', function() {
         if (option.value === currentPriceMax) option.selected = true;
     }
 
+    // Store the last selected values
+    let lastPriceMin = currentPriceMin;
+    let lastPriceMax = currentPriceMax;
+
     // Add event listeners for price changes
-    priceMinSelect.addEventListener('change', updateURL);
-    priceMaxSelect.addEventListener('change', updateURL);
+    priceMinSelect.addEventListener('change', function() {
+        lastPriceMin = this.value;
+        if (lastPriceMin && lastPriceMax) {
+            updateURL();
+        }
+    });
+
+    priceMaxSelect.addEventListener('change', function() {
+        lastPriceMax = this.value;
+        if (lastPriceMin && lastPriceMax) {
+            updateURL();
+        }
+    });
 
     // Function to update URL with filter parameters
     function updateURL() {
-        const priceMin = priceMinSelect.value;
-        const priceMax = priceMaxSelect.value;
+        const priceMin = lastPriceMin;
+        const priceMax = lastPriceMax;
+        if (!priceMin || !priceMax) return; // Only update if both prices are selected
         const url = new URL(window.location);
         url.searchParams.set('price_min', priceMin);
         url.searchParams.set('price_max', priceMax);

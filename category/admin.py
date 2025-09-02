@@ -7,6 +7,9 @@ class CategoryAdmin(admin.ModelAdmin):
     list_display = ('category_name', 'slug', 'parent', 'is_active')
     search_fields = ('category_name',)
     list_editable = ('is_active',)
+    list_display = ('category_name', 'slug', 'parent', 'is_active')
+    search_fields = ('category_name',)
+    list_editable = ('is_active',)
 admin.site.register(Category, CategoryAdmin)
 
 
