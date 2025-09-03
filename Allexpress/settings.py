@@ -38,6 +38,10 @@ BASE_URL = env('BASE_URL', default='https://5983-103-174-189-33.ngrok-free.app')
 
 # Application definition
 INSTALLED_APPS = [
+    "unfold",
+    "unfold.contrib.filters",
+    "unfold.contrib.forms",
+
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -144,6 +148,73 @@ EMAIL_USE_TLS = True
 EMAIL_HOST_USER = 'sir665904@gmail.com'
 EMAIL_HOST_PASSWORD = 'bjsw izog qbvy ntlw'
 DEFAULT_FROM_EMAIL = 'mominulshourav21@gmail.com'
+
+
+UNFOLD = {
+    "SITE_TITLE": "My Admin",
+    "SITE_HEADER": "My Project Administration",
+    "SITE_LOGO": "path/to/logo.png",  # Optional
+    "SHOW_HISTORY": True,
+    "SHOW_VIEW_ON_SITE": True,
+
+
+    "SIDEBAR": {
+        "show_search": True,   # enable search inside sidebar
+        "items": [
+            {
+                "label": "Dashboard",
+                "icon": "heroicons-outline:home",
+                "url": "/admin/",
+            },
+            {
+                "label": "Users",
+                "icon": "heroicons-outline:users",
+                "models": [
+                    "accounts.account",
+                    "accounts.userprofile",
+                ],
+            },
+            {
+                "label": "Products",
+                "icon": "heroicons-outline:archive-box",
+                "models": [
+                    "store.category",
+                    "store.brand",
+                    "store.product",
+                    "store.variation",
+                    "store.reviewrating",
+                ],
+            },
+            {
+                "label": "Orders",
+                "icon": "heroicons-outline:shopping-cart",
+                "models": [
+                    "orders.order",
+                    "orders.orderproduct",
+                    "orders.payment",
+                ],
+            },
+            {
+                "label": "Carts",
+                "icon": "heroicons-outline:shopping-bag",
+                "models": [
+                    "carts.cart",
+                    "carts.cartitem",
+                ],
+            },
+        ],
+    },
+}
+
+
+
+# UNFOLD = {
+#     "SITE_TITLE": "My Admin",
+#     "SITE_HEADER": "My Project Administration",
+#     "SITE_LOGO": "path/to/logo.png",  # Optional
+#     "SHOW_HISTORY": True,
+#     "SHOW_VIEW_ON_SITE": True,
+# }
 
 
 

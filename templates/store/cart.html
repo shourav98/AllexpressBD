@@ -335,9 +335,9 @@
                 {% for cart_item in cart_items %}
                     <div class="cart-item">
                         <div class="product-info">
-                            <img src="{{ cart_item.product.images.url }}" class="product-image" alt="{{ cart_item.product.product_name }}">
+                            <img src="{{ cart_item.product.images.url }}" class="product-image" alt="{{ cart_item.product.name }}">
                             <div class="product-details">
-                                <h4>{{ cart_item.product.product_name }}</h4>
+                                <h4>{{ cart_item.product.name }}</h4>
                                 <p class="product-description">{{ cart_item.product.description|truncatewords:20 }}</p>
                                 {% if cart_item.variations.sizes %}
                                     <div class="variation-info">

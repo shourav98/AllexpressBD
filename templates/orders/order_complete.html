@@ -60,7 +60,7 @@
                                             {% for item in ordered_products %}
                                                 <tr>
                                                     <td>
-                                                        {{ item.product.product_name }}
+                                                        {{ item.product.name }}
                                                         <p class="text-muted small">
                                                             {% if item.variations.all %}
                                                                 {% for i in item.variations.all %}

@@ -936,22 +936,22 @@
                 <div class="card-img-wrap" id="productImage{{ product.id }}">
                     {% if product.category.slug and product.slug %}
                         <a href="{% url 'product_detail' product.category.slug product.slug %}" data-product-id="{{ product.id }}" data-product-slug="{{ product.slug }}" data-category-slug="{{ product.category.slug }}" class="product-link">
-                            <img src="{{ product.images.url|default:'/static/images/placeholder.jpg' }}" class="card-img-top" alt="{{ product.product_name|default:'Product Image' }}">
+                            <img src="{{ product.images.url|default:'/static/images/placeholder.jpg' }}" class="card-img-top" alt="{{ product.name|default:'Product Image' }}">
                         </a>
                         {% if product.discounted_price != product.price %}
                             <span class="discount-badge">-{{ product.discount_percentage|default:'50' }}%</span>
                         {% endif %}
                     {% else %}
                         <span class="text-danger">Missing slug data</span>
-                        <img src="{{ product.images.url|default:'/static/images/placeholder.jpg' }}" class="card-img-top" alt="{{ product.product_name|default:'Product Image' }}">
+                        <img src="{{ product.images.url|default:'/static/images/placeholder.jpg' }}" class="card-img-top" alt="{{ product.name|default:'Product Image' }}">
                     {% endif %}
                 </div>
                 <div class="card-body">
                     <h5 class="card-title">
                         {% if product.category.slug and product.slug %}
-                            <a href="{% url 'product_detail' product.category.slug product.slug %}" class="text-dark text-decoration-none">{{ product.product_name|default:'Unnamed Product' }}</a>
+                            <a href="{% url 'product_detail' product.category.slug product.slug %}" class="text-dark text-decoration-none">{{ product.name|default:'Unnamed Product' }}</a>
                         {% else %}
-                            <span class="text-dark">{{ product.product_name|default:'Unnamed Product' }}</span>
+                            <span class="text-dark">{{ product.name|default:'Unnamed Product' }}</span>
                         {% endif %}
                     </h5>
                     <div class="product-price">
@@ -999,7 +999,7 @@
                 <div class="card-img-wrap" id="bestSeller{{ product.id }}">
                     {% if product.category.slug and product.slug %}
                         <a href="{% url 'product_detail' product.category.slug product.slug %}" data-product-id="{{ product.id }}" data-product-slug="{{ product.slug }}" data-category-slug="{{ product.category.slug }}" class="product-link">
-                            <img src="{{ product.images.url|default:'/static/images/placeholder.jpg' }}" class="card-img-top" alt="{{ product.product_name|default:'Product Image' }}">
+                            <img src="{{ product.images.url|default:'/static/images/placeholder.jpg' }}" class="card-img-top" alt="{{ product.name|default:'Product Image' }}">
                         </a>
                         {% if product.discounted_price != product.price %}
                             <span class="discount-badge">-{{ product.discount_percentage|default:'50' }}%</span>
@@ -1007,15 +1007,15 @@
                         <span class="badge-best-seller">Best Seller</span>
                     {% else %}
                         <span class="text-danger">Missing slug data</span>
-                        <img src="{{ product.images.url|default:'/static/images/placeholder.jpg' }}" class="card-img-top" alt="{{ product.product_name|default:'Product Image' }}">
+                        <img src="{{ product.images.url|default:'/static/images/placeholder.jpg' }}" class="card-img-top" alt="{{ product.name|default:'Product Image' }}">
                     {% endif %}
                 </div>
                 <div class="card-body">
                     <h5 class="card-title">
                         {% if product.category.slug and product.slug %}
-                            <a href="{% url 'product_detail' product.category.slug product.slug %}" class="text-dark text-decoration-none">{{ product.product_name|default:'Unnamed Product' }}</a>
+                            <a href="{% url 'product_detail' product.category.slug product.slug %}" class="text-dark text-decoration-none">{{ product.name|default:'Unnamed Product' }}</a>
                         {% else %}
-                            <span class="text-dark">{{ product.product_name|default:'Unnamed Product' }}</span>
+                            <span class="text-dark">{{ product.name|default:'Unnamed Product' }}</span>
                         {% endif %}
                     </h5>
                     <div class="product-price">

@@ -161,7 +161,7 @@ def place_order(request):
                         order_product.ordered = True
                         try:
                             order_product.save()
-                            print(f"OrderProduct saved: ID={order_product.id}, Product={order_product.product.product_name}")
+                            print(f"OrderProduct saved: ID={order_product.id}, Product={order_product.product.name}")
                         except Exception as e:
                             print(f"Error saving OrderProduct: {e}")
                             raise
@@ -180,7 +180,7 @@ def place_order(request):
                                 print(f"Error setting variations: {e}")
                                 raise
 
-                        print(f"OrderProduct created: Product={order_product.product.product_name}, ordered={order_product.ordered}, variations={order_product.variations.all()}")
+                        print(f"OrderProduct created: Product={order_product.product.name}, ordered={order_product.ordered}, variations={order_product.variations.all()}")
 
                     CartItem.objects.filter(user=current_user).delete()
                     print("Cart items deleted.")
@@ -204,7 +204,7 @@ def place_order(request):
                         'cus_city': data.city,
                         'cus_country': data.country,
                         'shipping_method': 'NO',
-                        'product_name': 'Products',
+                        'name': 'Products',
                         'product_category': 'General',
                         'product_profile': 'general',
                     }
@@ -289,7 +289,7 @@ def payment_success(request):
     ordered_products = OrderProduct.objects.filter(order=order).select_related('product')
     print(f"OrderProduct entries: {ordered_products.count()}")
     for op in ordered_products:
-        print(f"OrderProduct: Product={op.product.product_name}, ordered={op.ordered}")
+        print(f"OrderProduct: Product={op.product.name}, ordered={op.ordered}")
     subtotal = sum(item.product_price * item.quantity for item in ordered_products)
 
     payment = Payment.objects.create(

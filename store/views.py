@@ -78,7 +78,7 @@ def store(request, category_slug=None, brand_slug=None):
     keyword = request.GET.get("keyword")
     if keyword:
         products = products.filter(
-            Q(description__icontains=keyword) | Q(product_name__icontains=keyword)
+            Q(description__icontains=keyword) | Q(name__icontains=keyword)
         ).order_by("created_date")
 
     # Pagination
@@ -171,7 +171,7 @@ def search(request):
     keyword = request.GET.get("keyword")
     if keyword:
         products = Product.objects.filter(
-            Q(description__icontains=keyword) | Q(product_name__icontains=keyword),
+            Q(description__icontains=keyword) | Q(name__icontains=keyword),
             is_available=True
         ).order_by("created_date")
         product_count = products.count()
@@ -246,7 +246,7 @@ def products_by_brand(request, brand_slug):
     search_products = []
     if keyword:
         search_products = Product.objects.filter(
-            Q(description__icontains=keyword) | Q(product_name__icontains=keyword),
+            Q(description__icontains=keyword) | Q(name__icontains=keyword),
             is_available=True, brand=brand
         ).order_by("created_date")
         paged_products = search_products

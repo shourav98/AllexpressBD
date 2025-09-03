@@ -750,7 +750,7 @@
 
 <div class="product-container">
     <!-- Product Details Heading -->
-    <h2 class="product-details-heading">Product Details: {{ single_product.product_name|default:'Unnamed Product' }}</h2>
+    <h2 class="product-details-heading">Product Details: {{ single_product.name|default:'Unnamed Product' }}</h2>
 
     <!-- Category Navigation -->
 
@@ -768,7 +768,7 @@
         <div class="col-lg-7">
             <div class="gallery-section">
                 <div class="main-image" id="mainImage">
-                    <img src="{{ single_product.images.url|default:'/static/images/placeholder.jpg' }}" id="mainImg" alt="{{ single_product.product_name|default:'Product Image' }}">
+                    <img src="{{ single_product.images.url|default:'/static/images/placeholder.jpg' }}" id="mainImg" alt="{{ single_product.name|default:'Product Image' }}">
                     {% if single_product.discounted_price != single_product.price %}
                         <span class="discount-badge">-{{ single_product.discount_percentage|default:'0' }}% OFF</span>
                     {% endif %}
@@ -794,7 +794,7 @@
                     <div class="product-brand">
                         <a href="{% url 'products_by_category' single_product.category.slug %}">{{ single_product.category|default:'No Category' }}</a>
                     </div>
-                    <h1 class="product-name">{{ single_product.product_name|default:'Unnamed Product' }}</h1>
+                    <h1 class="product-name">{{ single_product.name|default:'Unnamed Product' }}</h1>
 
                     <div class="product-price">
                         {% if single_product.discounted_price != single_product.price %}
@@ -1137,13 +1137,13 @@
                 <div class="related-item">
                     <a href="{% url 'product_detail' product.category.slug product.slug %}" data-product-id="{{ product.id }}" data-product-slug="{{ product.slug }}" data-category-slug="{{ product.category.slug }}" class="text-decoration-none">
                         <div class="related-image">
-                            <img src="{{ product.images.url|default:'/static/images/placeholder.jpg' }}" alt="{{ product.product_name|default:'Product Image' }}">
+                            <img src="{{ product.images.url|default:'/static/images/placeholder.jpg' }}" alt="{{ product.name|default:'Product Image' }}">
                             {% if product.discounted_price != product.price %}
                                 <span class="discount-badge">-{{ product.discount_percentage|default:'50' }}%</span>
                             {% endif %}
                         </div>
                         <div class="related-info">
-                            <div class="related-name">{{ product.product_name|default:'Unnamed Product' }}</div>
+                            <div class="related-name">{{ product.name|default:'Unnamed Product' }}</div>
                             <div class="related-price">
                                 {% if product.discounted_price != product.price %}
                                     <span class="discounted">TK {{ product.discounted_price|floatformat:2 }}</span>
