@@ -26,6 +26,11 @@ urlpatterns = [
     
     
     path("brand/<slug:brand_slug>/", views.store, name="products_by_brand"),
+
+
+    path("product/create/", views.product_create, name="product_create"),
+    path("product/<int:product_id>/add-variation/", views.add_variation_ajax, name="add_variation_ajax"),
+
 ]
 
 

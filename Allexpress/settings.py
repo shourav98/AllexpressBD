@@ -1,6 +1,11 @@
 from pathlib import Path
 import environ
 from django.contrib.messages import constants as messages
+from django.templatetags.static import static
+
+from django.urls import reverse_lazy
+from django.utils.translation import gettext_lazy as _
+
 
 # Initialize the environment variables
 env = environ.Env()
@@ -38,9 +43,10 @@ BASE_URL = env('BASE_URL', default='https://5983-103-174-189-33.ngrok-free.app')
 
 # Application definition
 INSTALLED_APPS = [
-    "unfold",
-    "unfold.contrib.filters",
-    "unfold.contrib.forms",
+    'unfold',
+    'unfold.contrib.filters',
+    'unfold.contrib.forms',
+    'unfold.contrib.inlines',
 
     'django.contrib.admin',
     'django.contrib.auth',
@@ -113,11 +119,31 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
+
+TIME_ZONE = 'Asia/Dhaka'
+USE_TZ = True
+
+# Logging configuration
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+        },
+    },
+    'loggers': {
+        '': {
+            'handlers': ['console'],
+            'level': 'DEBUG',
+        },
+    },
+}
+
 # Internationalization
 LANGUAGE_CODE = 'en-us'
-TIME_ZONE = 'UTC'
 USE_I18N = True
-USE_TZ = True
+
 
 # Static files (CSS, JavaScript, Images)
 STATIC_URL = 'static/'
@@ -150,16 +176,56 @@ EMAIL_HOST_PASSWORD = 'bjsw izog qbvy ntlw'
 DEFAULT_FROM_EMAIL = 'mominulshourav21@gmail.com'
 
 
+
 UNFOLD = {
-    "SITE_TITLE": "My Admin",
-    "SITE_HEADER": "My Project Administration",
-    "SITE_LOGO": "path/to/logo.png",  # Optional
+    "SITE_LOGO": {
+        "light": lambda request: static("images/e_com.png"),  # light mode
+        "dark": lambda request: static("images/e_com.png"),  # dark mode
+    },
+    "SITE_DROPDOWN": [
+        {
+            "icon": "diamond",
+            "title": _("My site"),
+            "link": "https://example.com",
+            "attrs": {
+                "target": "_blank",
+            },
+        },
+        {
+            "icon": "diamond",
+            "title": _("My site"),
+            "link": reverse_lazy("admin:index"),
+        },
+    ],
     "SHOW_HISTORY": True,
     "SHOW_VIEW_ON_SITE": True,
-
+    "SITE_TITLE": "Ecommerce Admin",
+    "SITE_HEADER": "Ecommerce Administration",
+    "SITE_URL": "/admin/",
+    "SITE_ICON": {
+        "light": lambda request: static("icon-light.png"),
+        "dark": lambda request: static("icon-dark.png"),
+    },
+    "SITE_SYMBOL": "store",
+ 
+    "SHOW_VIEW_ON_SITE": True,
+    "COLORS": {
+        "primary": {
+            "50": "250 245 255",
+            "100": "243 232 255",
+            "200": "233 213 255",
+            "300": "216 180 254",
+            "400": "192 132 252",
+            "500": "168 85 247",
+            "600": "147 51 234",
+            "700": "126 34 206",
+            "800": "107 33 168",
+            "900": "88 28 135",
+        },
+    },
 
     "SIDEBAR": {
-        "show_search": True,   # enable search inside sidebar
+        "show_search": True,  # Enable search inside sidebar
         "items": [
             {
                 "label": "Dashboard",
@@ -183,6 +249,14 @@ UNFOLD = {
                     "store.product",
                     "store.variation",
                     "store.reviewrating",
+                    "store.productgallery",
+                ],
+            },
+            {
+                "label": "Inventory",
+                "icon": "heroicons-outline:clipboard-document-check",
+                "models": [
+                    "store.inventorylog",  # 🔑 new logs model
                 ],
             },
             {
@@ -204,7 +278,66 @@ UNFOLD = {
             },
         ],
     },
+    "DASHBOARD_CALLBACK": "Allexpress.utils.dashboard_callback",  # Adjust path to match your project structure (e.g., create utils.py in your main app)
 }
+
+
+
+# UNFOLD = {
+#     "SITE_TITLE": "My Admin",
+#     "SITE_HEADER": "My Project Administration",
+#     "SITE_LOGO": "path/to/logo.png",  # Optional
+#     "SHOW_HISTORY": True,
+#     "SHOW_VIEW_ON_SITE": True,
+
+
+#     "SIDEBAR": {
+#         "show_search": True,   # enable search inside sidebar
+#         "items": [
+#             {
+#                 "label": "Dashboard",
+#                 "icon": "heroicons-outline:home",
+#                 "url": "/admin/",
+#             },
+#             {
+#                 "label": "Users",
+#                 "icon": "heroicons-outline:users",
+#                 "models": [
+#                     "accounts.account",
+#                     "accounts.userprofile",
+#                 ],
+#             },
+#             {
+#                 "label": "Products",
+#                 "icon": "heroicons-outline:archive-box",
+#                 "models": [
+#                     "store.category",
+#                     "store.brand",
+#                     "store.product",
+#                     "store.variation",
+#                     "store.reviewrating",
+#                 ],
+#             },
+#             {
+#                 "label": "Orders",
+#                 "icon": "heroicons-outline:shopping-cart",
+#                 "models": [
+#                     "orders.order",
+#                     "orders.orderproduct",
+#                     "orders.payment",
+#                 ],
+#             },
+#             {
+#                 "label": "Carts",
+#                 "icon": "heroicons-outline:shopping-bag",
+#                 "models": [
+#                     "carts.cart",
+#                     "carts.cartitem",
+#                 ],
+#             },
+#         ],
+#     },
+# }
 
 
 

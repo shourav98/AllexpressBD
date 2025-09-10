@@ -1,0 +1,62 @@
+<!-- store/templates/store/product_form.html -->
+{% load static %}
+<h2>Add Product</h2>
+<form method="post" id="productForm">
+  {% csrf_token %}
+  {{ form.as_p }}
+  <button type="submit">Save Product</button>
+</form>
+
+<hr>
+<div id="variationSection" style="display:none;">
+  <h3>Add Variations</h3>
+  <form id="variationForm">
+    {% csrf_token %}
+    <select name="variation_category" required>
+      <option value="color">Color</option>
+      <option value="size">Size</option>
+    </select>
+    <input type="text" name="variation_value" placeholder="Enter value (e.g. Red, XL)" required>
+    <input type="number" name="stock" value="10" required>
+    <label>
+      <input type="checkbox" name="is_active" checked> Active
+    </label>
+    <button type="submit">Add Variation</button>
+  </form>
+
+  <ul id="variationList"></ul>
+</div>
+
+<script>
+document.getElementById("productForm").addEventListener("submit", function(e) {
+  e.preventDefault();
+  fetch("", {
+    method: "POST",
+    body: new FormData(this)
+  }).then(res => res.text())
+  .then(html => {
+    // Redirect to edit page where variations can be added
+    window.location.href = window.location.href; 
+  })
+});
+
+// Handle variation add
+document.getElementById("variationForm").addEventListener("submit", function(e) {
+  e.preventDefault();
+  const url = window.location.pathname.replace("create", "add-variation") // simple trick
+  fetch(url, {
+    method: "POST",
+    body: new FormData(this)
+  }).then(res => res.json())
+  .then(data => {
+    if (data.success) {
+      const li = document.createElement("li");
+      li.textContent = `${data.category}: ${data.value} (Stock: ${data.stock})`;
+      document.getElementById("variationList").appendChild(li);
+      this.reset();
+    } else {
+      alert("Error adding variation");
+    }
+  });
+});
+</script>

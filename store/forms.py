@@ -1,8 +1,23 @@
 from django import forms
-from .models import ReviewRating
+from .models import ReviewRating, Product, Variation
 
 
 class ReviewForm(forms.ModelForm):
     class Meta:
         model = ReviewRating
         fields = ['subject','review', 'rating']
+
+
+
+
+
+class ProductForm(forms.ModelForm):
+    class Meta:
+        model = Product
+        fields = ["name", "description", "price", "stock", "is_available"]
+
+
+class VariationForm(forms.ModelForm):
+    class Meta:
+        model = Variation
+        fields = ["variation_category", "variation_value", "stock", "is_active"]

@@ -2,6 +2,9 @@ from django.db import models
 from store.models import Product, Variation
 from accounts.models import Account
 
+
+from django.core.exceptions import ValidationError
+
 # Create your models here.
 class Cart(models.Model):
     cart_id = models.CharField(max_length=200, blank=True)
@@ -25,3 +28,13 @@ class CartItem(models.Model):
         # return self.product
         return self.product
 
+
+    def clean(self):
+        # Check if enough stock exists
+        if self.variations.exists():
+            for variation in self.variations.all():
+                if self.quantity > variation.stock:
+                    raise ValidationError(f"Not enough stock for {variation.variation_value}")
+        else:
+            if self.quantity > self.product.stock:
+                raise ValidationError("Not enough stock available")

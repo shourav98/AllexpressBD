@@ -1,0 +1,307 @@
+{% extends "unfold/layouts/base.html" %}
+{% load i18n static unfold %}
+
+{% block content %}
+
+<head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <!--Chartjs CDN-->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@2.9.4/dist/Chart.min.js"></script>
+
+    <!--Custome CSS-->
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+</head>
+
+<div class="flex flex-col gap-8 p-8">
+    <!-- Header Section -->
+    <div class="flex flex-col gap-2">
+        <h1 class="text-2xl font-semibold text-gray-900">{% trans "Dashboard" %}</h1>
+        <p class="text-gray-600">{% trans "Overview of your store performance" %}</p>
+    </div>
+
+    <!-- KPI Cards Grid -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        {% for stat in kpi %}
+        <div class="border border-gray-200 rounded-xl shadow-sm p-6">
+            <div class="flex items-center justify-between mb-4">
+                <div class="text-sm font-medium text-gray-600">{{ stat.title }}</div>
+                <div class="text-gray-400">
+                    {% component "unfold/components/icon.html" with icon=stat.icon %}{% endcomponent %}
+                </div>
+            </div>
+            <div class="text-2xl font-semibold text-gray-900">{{ stat.metric }}</div>
+            <div class="flex items-center mt-2">
+                {% if stat.trend == "up" %}
+                <span class="text-green-600 text-sm font-medium flex items-center">
+                    {% component "unfold/components/icon.html" with icon="heroicons-outline:arrow-up" class="h-4 w-4 mr-1" %}{% endcomponent %}
+                    {{ stat.trend_value }}
+                </span>
+                {% else %}
+                <span class="text-red-600 text-sm font-medium flex items-center">
+                    {% component "unfold/components/icon.html" with icon="heroicons-outline:arrow-down" class="h-4 w-4 mr-1" %}{% endcomponent %}
+                    {{ stat.trend_value }}
+                </span>
+                {% endif %}
+                <span class="text-gray-500 text-sm ml-2">{{ stat.footer }}</span>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+   
+
+    <!-- Additional Charts Section -->
+    <div class="w-full mt-8">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <!-- Pie Chart -->
+            <div class="border border-gray-200 rounded-xl shadow-sm p-6">
+                <h3 class="text-lg font-semibold text-gray-900 mb-4">{% trans "Product Distribution" %}</h3>
+                <div class="chart-container" style="position: relative; height:400px; width:100%">
+                    <canvas id="myChart1"></canvas>
+                </div>
+            </div>
+
+            <!-- Bar Chart -->
+            <div class="border border-gray-200 rounded-xl shadow-sm p-6">
+                <h3 class="text-lg font-semibold text-gray-900 mb-4">{% trans "Inventory Overview" %}</h3>
+                <div class="chart-container" style="position: relative; height:400px; width:100%">
+                    <canvas id="myChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tables and Additional Info -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 mt-8">
+        <!-- Recent Orders -->
+        <div class="lg:col-span-2 border border-gray-200 rounded-xl shadow-sm p-6">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-lg font-semibold text-gray-900">{% trans "Recent Orders" %}</h3>
+                <a href="{% url 'admin:orders_order_changelist' %}" class="text-sm font-medium text-primary-600 hover:text-primary-700">
+                    {% trans "View all" %}
+                </a>
+            </div>
+            
+            <div class="overflow-x-auto">
+                <table class="w-full text-sm">
+                    <thead class=" text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        <tr>
+                            <th class="px-4 py-3">{% trans "Order #" %}</th>
+                            <th class="px-4 py-3">{% trans "Customer" %}</th>
+                            <th class="px-4 py-3 text-right">{% trans "Amount" %}</th>
+                            <th class="px-4 py-3">{% trans "Status" %}</th>
+                            <th class="px-4 py-3">{% trans "Date" %}</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-200">
+                        {% for row in table_data %}
+                        <tr class="hover:bg-gray-50">
+                            <td class="px-4 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{ row.cells.0 }}</td>
+                            <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-500">{{ row.cells.1 }}</td>
+                            <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900 text-right">{{ row.cells.2 }}</td>
+                            <td class="px-4 py-4 whitespace-nowrap">
+                                {% if row.cells.3 == 'Completed' %}
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-brown-900">
+                                    {{ row.cells.3 }}
+                                </span>
+                                {% elif row.cells.3 == 'Pending' %}
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                                    {{ row.cells.3 }}
+                                </span>
+                                {% elif row.cells.3 == 'Cancelled' %}
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                                    {{ row.cells.3 }}
+                                </span>
+                                {% else %}
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                                    {{ row.cells.3 }}
+                                </span>
+                                {% endif %}
+                            </td>
+                            <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-500">{{ row.cells.4 }}</td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="5" class="px-4 py-4 text-sm text-gray-500 text-center font-medium whitespace-nowrap color text-red-500">{% trans "No orders found" %}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Sidebar Section -->
+        <div class="space-y-6">
+            <!-- Performance Metrics -->
+            <div class="border border-gray-200 rounded-xl shadow-sm p-6">
+                <h3 class="text-lg font-semibold text-gray-900 mb-4">{% trans "Performance Metrics" %}</h3>
+                <div class="space-y-5">
+                    {% for item in progress %}
+                    <div>
+                        <div class="flex justify-between items-center mb-2">
+                            <span class="text-sm font-medium text-gray-700">{{ item.title }}</span>
+                            <span class="text-sm font-medium text-gray-900">{{ item.value }}%</span>
+                        </div>
+                        <div class="w-full bg-gray-200 rounded-full h-2">
+                            <div class="bg-primary-600 h-2 rounded-full" style="width: '{{ item.value }}%';"></div>
+                        </div>
+                        <p class="text-xs text-gray-500 mt-1">{{ item.description }}</p>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Low Stock Alerts -->
+            {% if low_stock_products or low_stock_variations %}
+            <div class="border border-red-200 rounded-xl shadow-sm p-6">
+                <h3 class="text-lg font-semibold text-red-800 mb-4 flex items-center">
+                    {% component "unfold/components/icon.html" with icon="heroicons-outline:exclamation-triangle" class="h-5 w-5 mr-2" %}{% endcomponent %}
+                    {% trans "Low Stock Alerts" %}
+                </h3>
+                <div class="space-y-3">
+                    {% for product in low_stock_products %}
+                    <div class="flex justify-between items-center">
+                        <span class="text-sm text-gray-700 truncate">{{ product.name }}</span>
+                        <span class="text-sm font-medium text-red-600 whitespace-nowrap">{{ product.stock }} left</span>
+                    </div>
+                    {% endfor %}
+                    {% for variation in low_stock_variations %}
+                    <div class="flex justify-between items-center">
+                        <span class="text-sm text-gray-700 truncate">{{ variation.product.name }} - {{ variation.variation_value }}</span>
+                        <span class="text-sm font-medium text-red-600 whitespace-nowrap">{{ variation.stock }} left</span>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+        </div>
+        
+    </div>
+</div>
+
+<script>
+    // Initialize charts after page load
+    document.addEventListener('DOMContentLoaded', function() {
+    // Predefined color palette
+    const colorPalette = [
+        'rgba(255, 99, 132, 1)',   // Red
+        'rgba(255, 102, 204, 1)',  // Magenta
+        'rgba(255, 206, 86, 1)',   // Yellow
+        'rgba(102, 255, 102, 1)',  // Lime Green
+        'rgba(75, 192, 192, 1)',   // Teal
+        'rgba(153, 102, 255, 1)',  // Purple
+        'rgba(255, 159, 64, 1)',   // Orange
+        'rgba(255, 69, 255, 1)',   // Pink
+        'rgba(54, 235, 162, 1)',   // Green
+        'rgba(184, 106, 86, 1)',   // Brown
+        'rgba(102, 255, 153, 1)',  // Light Green
+        'rgba(86, 184, 255, 1)',   // Light Blue
+        'rgba(192, 75, 192, 1)',   // Violet
+        'rgba(255, 153, 102, 1)',  // Coral
+        'rgba(102, 204, 255, 1)',   // Sky Blue
+        'rgba(255, 255, 102, 1)',  // Light Yellow
+        'rgba(102, 255, 255, 1)',  // Aqua
+        'rgba(255, 153, 255, 1)',  // Lavender
+        'rgba(153, 102, 204, 1)',  // Plum
+        'rgba(255, 102, 102, 1)',  // Crimson
+        'rgba(102, 102, 255, 1)',  // Royal Blue
+
+    ];
+
+    // Function to map product name to a consistent color
+    function getFixedColor(productName) {
+        // Simple hash function to get consistent index based on product name
+        let hash = 0;
+        for (let i = 0; i < productName.length; i++) {
+            hash = productName.charCodeAt(i) + ((hash << 5) - hash);
+        }
+        // Use modulo to map hash to an index in the color palette
+        const index = Math.abs(hash) % colorPalette.length;
+        return colorPalette[index];
+    }
+
+    // Create a color map for products to ensure consistency across charts
+    const colorMap = {};
+
+    // Pie Chart
+    var ctx1 = document.getElementById('myChart1').getContext('2d');
+    var labels = [];
+    var data = [];
+    {% for op in ordered_products %}
+        labels.push('{{ op.product__name }}');
+        data.push('{{ op.total_quantity }}');
+        // Assign color to product if not already assigned
+        if (!colorMap['{{ op.product__name }}']) {
+            colorMap['{{ op.product__name }}'] = getFixedColor('{{ op.product__name }}');
+        }
+    {% endfor %}
+
+    // Generate colors for Pie Chart using colorMap
+    var pieColors = labels.map(label => colorMap[label]);
+
+    var myChart1 = new Chart(ctx1, {
+        type: 'pie',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: 'Products',
+                data: data,
+                backgroundColor: pieColors,
+                borderColor: pieColors,
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            legend: {
+                position: 'right'
+            }
+        }
+    });
+
+    // Bar Chart (Inventory Overview)
+    var invLabels = [];
+    var invData = [];
+    {% for p in inventory %}
+        invLabels.push("{{ p.name }}");
+        invData.push({{ p.stock }});
+        // Assign color to product if not already assigned
+        if (!colorMap["{{ p.name }}"]) {
+            colorMap["{{ p.name }}"] = getFixedColor("{{ p.name }}");
+        }
+    {% endfor %}
+
+    // Generate colors for Bar Chart using colorMap
+    var barColors = invLabels.map(label => colorMap[label]);
+
+    var ctx = document.getElementById('myChart').getContext('2d');
+    var myChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: invLabels,
+            datasets: [{
+                label: 'Stock Available',
+                data: invData,
+                backgroundColor: barColors,
+                borderColor: barColors,
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                yAxes: [{
+                    ticks: { beginAtZero: true }
+                }]
+            }
+        }
+    });
+    });
+</script>
+
+{% endblock %}

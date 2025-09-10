@@ -10,6 +10,12 @@ from django.contrib import messages
 from orders.models import OrderProduct
 from decimal import Decimal
 
+
+
+from django.http import JsonResponse
+from .models import Variation
+from .forms import ProductForm, VariationForm
+
 def store(request, category_slug=None, brand_slug=None):
     """Store page with products, categories, subcategories, brands, filters, and search."""
     category = None
@@ -329,3 +335,37 @@ def product_detail(request, category_slug=None, product_slug=None, brand_slug=No
         "brands": brands,
     }
     return render(request, "store/product_detail.html", context)
+
+
+
+
+
+def product_create(request):
+    if request.method == "POST":
+        form = ProductForm(request.POST)
+        if form.is_valid():
+            product = form.save()
+            return redirect("product_edit", pk=product.pk)
+    else:
+        form = ProductForm()
+    return render(request, "store/product_form.html", {"form": form})
+
+
+def add_variation_ajax(request, product_id):
+    """AJAX endpoint to add variation"""
+    if request.method == "POST":
+        product = get_object_or_404(Product, pk=product_id)
+        form = VariationForm(request.POST)
+        if form.is_valid():
+            variation = form.save(commit=False)
+            variation.product = product
+            variation.save()
+            return JsonResponse({
+                "success": True,
+                "id": variation.id,
+                "category": variation.variation_category,
+                "value": variation.variation_value,
+                "stock": variation.stock,
+            })
+        return JsonResponse({"success": False, "errors": form.errors})
+    return JsonResponse({"success": False})

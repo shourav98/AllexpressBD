@@ -21,7 +21,8 @@ class Product(models.Model):
     price = models.DecimalField(max_digits=10, decimal_places=2)
     discount_percentage = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True)
     images = models.ImageField(upload_to='photos/products')
-    stock = models.IntegerField()
+    # stock = models.IntegerField()
+    stock = models.PositiveIntegerField(default=0)  # 🔑 product-level stock
     is_available = models.BooleanField(default=True)
     # category = models.ForeignKey(Category, on_delete=models.CASCADE)
     category = models.ForeignKey(Category, on_delete=models.CASCADE, related_name='products', null=True, blank=True)
@@ -29,6 +30,7 @@ class Product(models.Model):
     modified_date = models.DateTimeField(auto_now=True)
 
     brand = models.ForeignKey(Brand, on_delete=models.CASCADE, null=True, blank=True)  # New field
+    created_at = models.DateTimeField(auto_now_add=True)
 
 
     @property
@@ -110,17 +112,34 @@ variation_category_choice=(
     ('size', 'size'),
 )
 
+# class Variation(models.Model):
+#     product = models.ForeignKey(Product, on_delete=models.CASCADE)
+#     variation_category = models.CharField(max_length=100, choices=variation_category_choice)
+#     variation_value = models.CharField(max_length=100)
+#     is_active = models.BooleanField(default=True)
+#     created_date = models.DateTimeField(auto_now=True)
+
+#     objects = VariationManager()
+
+#     def __str__(self):
+#         return self.variation_value
+    
 class Variation(models.Model):
-    product = models.ForeignKey(Product, on_delete=models.CASCADE)
+    product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name="variations")
+    # product = models.ForeignKey(Product, on_delete=models.CASCADE)
     variation_category = models.CharField(max_length=100, choices=variation_category_choice)
     variation_value = models.CharField(max_length=100)
+    stock = models.PositiveIntegerField(default=0)  # 🔑 track inventory per variation
     is_active = models.BooleanField(default=True)
     created_date = models.DateTimeField(auto_now=True)
 
     objects = VariationManager()
 
     def __str__(self):
-        return self.variation_value
+        return f"{self.product.name} - {self.variation_value}"
+    
+
+
 
 class ReviewRating(models.Model):
     product = models.ForeignKey(Product, on_delete=models.CASCADE)
@@ -147,3 +166,25 @@ class ProductGallery(models.Model):
     class Meta:
         verbose_name = "Productgallery"
         verbose_name_plural = "product galleries"
+
+
+
+
+
+class InventoryLog(models.Model):
+    product = models.ForeignKey(Product, on_delete=models.CASCADE)
+    variation = models.ForeignKey(Variation, on_delete=models.CASCADE, null=True, blank=True)
+    change = models.IntegerField()  # +10 restock, -2 sold
+    reason = models.CharField(
+        max_length=50,
+        choices=[
+            ("sale", "Sale"),
+            ("restock", "Restock"),
+            ("cancel", "Cancel"),
+            ("manual", "Manual Update"),
+        ],
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.product.name} ({self.change}) - {self.reason}"

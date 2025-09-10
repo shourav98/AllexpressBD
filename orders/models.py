@@ -7,6 +7,11 @@ from django.conf import settings
 from django.db import models
 from django.contrib.auth.models import User
 
+
+
+from django.db.models.signals import post_save
+from django.dispatch import receiver
+
 class Payment(models.Model):
     PAYMENT_STATUS = (
         ('Success', 'Success'),
@@ -102,8 +107,34 @@ class OrderProduct(models.Model):
     
     def full_address(self):
         return f"{self.address_line_1}, {self.address_line_2}"
-    
 
-    
+
+
+@receiver(post_save, sender=OrderProduct)
+def update_stock(sender, instance, created, **kwargs):
+    if created and instance.ordered:  # deduct only on confirmed orders
+        if instance.variations.exists():
+            for variation in instance.variations.all():
+                if variation.stock >= instance.quantity:
+                    variation.stock -= instance.quantity
+                    variation.save()
+        else:
+            if instance.product.stock >= instance.quantity:
+                instance.product.stock -= instance.quantity
+                instance.product.save()
+
+
+
+@receiver(post_save, sender=Order)
+def restock_on_cancel(sender, instance, **kwargs):
+    if instance.status == "Cancelled":
+        for order_item in instance.orderproduct_set.all():
+            if order_item.variations.exists():
+                for variation in order_item.variations.all():
+                    variation.stock += order_item.quantity
+                    variation.save()
+            else:
+                order_item.product.stock += order_item.quantity
+                order_item.product.save()
     
     
