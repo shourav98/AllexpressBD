@@ -1,3 +1,4 @@
+
 from decimal import Decimal
 import datetime
 import requests
@@ -7,6 +8,7 @@ from django.core.mail import send_mail
 from django.http import HttpResponse
 from django.shortcuts import render, redirect
 from django.views.decorators.csrf import csrf_exempt
+from django.contrib import auth
 
 from django.http import JsonResponse
 import json
@@ -148,73 +150,78 @@ def place_order(request):
                     order.order_number = order_number
                     order.save()
 
-                    # Initialize Pathao client and authenticate
-                    pathao_client = PathaoAPIClient()
-                    if not pathao_client.authenticate():
-                        logger.error("Pathao authentication failed")
-                        raise Exception("Courier service authentication failed. Please try again later.")
+                    # Try to create Pathao shipment (optional)
+                    pathao_courier = None
+                    delivery_fee = Decimal('0.00')
+                    try:
+                        pathao_client = PathaoAPIClient()
+                        if pathao_client.authenticate():
+                            # Calculate total weight
+                            total_weight = sum(item.quantity for item in cart_items)
 
-                    # Calculate total weight
-                    total_weight = sum(item.quantity for item in cart_items)
+                            # Get delivery cost (with fallback)
+                            delivery_cost = pathao_client.get_delivery_cost(
+                                city_id=int(city_id),
+                                zone_id=int(zone_id),
+                                delivery_type=48,
+                                item_type=2,
+                                item_weight=total_weight
+                            )
 
-                    # Get delivery cost (with fallback)
-                    delivery_cost = pathao_client.get_delivery_cost(
-                        city_id=int(city_id),
-                        zone_id=int(zone_id),
-                        delivery_type=48,
-                        item_type=2,
-                        item_weight=total_weight
-                    )
+                            if delivery_cost and 'data' in delivery_cost:
+                                delivery_fee = Decimal(str(delivery_cost['data']['total_price']))
+                            else:
+                                logger.warning("Could not calculate delivery cost. Using default fee.")
+                                delivery_fee = Decimal('100.00')
 
-                    if not delivery_cost or 'data' not in delivery_cost:
-                        logger.warning("Could not calculate delivery cost. Using default fee.")
-                        delivery_fee = Decimal('100.00')
-                    else:
-                        delivery_fee = Decimal(str(delivery_cost['data']['total_price']))
+                            # Update order total with delivery fee
+                            order.order_total += delivery_fee
+                            order.save()
 
-                    # Update order total with delivery fee
-                    order.order_total += delivery_fee
-                    order.save()
+                            # Create Pathao order
+                            pathao_order_data = {
+                                "store_id": settings.PATHAO_STORE_ID,
+                                "merchant_order_id": order.order_number,
+                                "sender_name": order.full_name(),
+                                "sender_phone": order.phone,
+                                "recipient_name": order.full_name(),
+                                "recipient_phone": order.phone,
+                                "recipient_address": order.full_address(),
+                                "recipient_city": int(city_id),  # Updated field name
+                                "recipient_zone": int(zone_id),  # Updated field name
+                                "recipient_area": int(area_id),  # Updated field name
+                                "special_instruction": order.order_note or "None",
+                                "item_quantity": total_weight,
+                                "item_weight": total_weight,
+                                "amount_to_collect": float(order.order_total) if payment_method == 'Cash on Delivery' else 0,
+                                "item_description": "E-commerce products",
+                                "delivery_type": 48,
+                                "item_type": 2
+                            }
 
-                    # Create Pathao order
-                    pathao_order_data = {
-                        "store_id": settings.PATHAO_STORE_ID,
-                        "merchant_order_id": order.order_number,
-                        "sender_name": order.full_name(),
-                        "sender_phone": order.phone,
-                        "recipient_name": order.full_name(),
-                        "recipient_phone": order.phone,
-                        "recipient_address": order.full_address(),
-                        "recipient_city": int(city_id),  # Updated field name
-                        "recipient_zone": int(zone_id),  # Updated field name
-                        "recipient_area": int(area_id),  # Updated field name
-                        "special_instruction": order.order_note or "None",
-                        "item_quantity": total_weight,
-                        "item_weight": total_weight,
-                        "amount_to_collect": float(order.order_total) if payment_method == 'Cash on Delivery' else 0,
-                        "item_description": "E-commerce products",
-                        "delivery_type": 48,
-                        "item_type": 2
-                    }
+                            pathao_order = pathao_client.create_order(pathao_order_data)
 
-                    pathao_order = pathao_client.create_order(pathao_order_data)
+                            if pathao_order and 'data' in pathao_order:
+                                # Create Pathao courier record
+                                consignment_id = pathao_order['data']['consignment_id']
+                                delivery_status = pathao_order['data'].get('order_status', 'Pending')
 
-                    if not pathao_order or 'data' not in pathao_order:
-                        logger.error(f"Pathao order creation failed for order {order.order_number}: {pathao_order}")
-                        raise Exception("Failed to create courier shipment. Please try again or contact support.")
-
-                    # Create Pathao courier record
-                    consignment_id = pathao_order['data']['consignment_id']
-                    delivery_status = pathao_order['data'].get('order_status', 'Pending')
-
-                    pathao_courier = PathaoCourier(
-                        order=order,
-                        consignment_id=consignment_id,
-                        merchant_order_id=order.order_number,
-                        delivery_status=delivery_status,
-                        delivery_fee=delivery_fee
-                    )
-                    pathao_courier.save()
+                                pathao_courier = PathaoCourier(
+                                    order=order,
+                                    consignment_id=consignment_id,
+                                    merchant_order_id=order.order_number,
+                                    delivery_status=delivery_status,
+                                    delivery_fee=delivery_fee
+                                )
+                                pathao_courier.save()
+                                logger.info(f"Pathao shipment created for order {order.order_number}")
+                            else:
+                                logger.error(f"Pathao order creation failed for order {order.order_number}: {pathao_order}")
+                        else:
+                            logger.warning("Pathao authentication failed, proceeding without courier service")
+                    except Exception as e:
+                        logger.exception(f"Pathao integration failed for order {order.order_number}: {e}")
+                        # Continue without Pathao
 
                     # Create payment record
                     payment = Payment(
@@ -395,7 +402,7 @@ def get_areas(request):
 
 def track_parcel(request, order_number):
     try:
-        order = Order.objects.get(order_number=order_number, user=request.user)
+        order = Order.objects.get(order_number=order_number, user=request.user, is_ordered=True)
         logger.debug(f"Found order: {order_number} for user: {request.user}")
         
         pathao_courier = PathaoCourier.objects.get(order=order)
@@ -498,22 +505,21 @@ def pathao_webhook(request):
     return HttpResponse(status=405)
 
 @csrf_exempt
-@csrf_exempt
 def order_complete(request, order_number):
     try:
-        order = Order.objects.get(order_number=order_number, is_ordered=True)
+        order = Order.objects.get(order_number=order_number, is_ordered=True, user=request.user)
         ordered_products = OrderProduct.objects.filter(order=order).select_related('product')
         pathao_courier = PathaoCourier.objects.filter(order=order).first()
 
         # Convert all values to Decimal to ensure consistent data types
         subtotal = Decimal(sum(float(item.product_price) * item.quantity for item in ordered_products))
         discount = subtotal * Decimal('0.5')
-        
+
         # Handle delivery fee (convert to Decimal if it exists)
         delivery_fee = Decimal(0)
         if pathao_courier and pathao_courier.delivery_fee:
             delivery_fee = Decimal(str(pathao_courier.delivery_fee))
-            
+
         grand_total = subtotal - discount + delivery_fee
 
         transID = request.POST.get('tran_id') or request.GET.get('tran_id')
@@ -550,6 +556,10 @@ def payment_success(request):
             with transaction.atomic():
                 order = Order.objects.get(order_number=tran_id)
                 print(f"Order found: {order.order_number}, is_ordered={order.is_ordered}")
+                # Re-authenticate the user since session may be lost during payment gateway redirect
+                if not request.user.is_authenticated or request.user != order.user:
+                    auth.login(request, order.user)
+                    print(f"User {order.user} logged back in after payment.")
                 if order.is_ordered:
                     print("Order already processed.")
                     ordered_products = OrderProduct.objects.filter(order=order).select_related('product')
