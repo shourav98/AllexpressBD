@@ -13,12 +13,6 @@
                 <h4 class="card-title mb-4">Billing Address</h4>
                 <form action="{% url 'place_order' %}" method="POST">
                     {% csrf_token %}
-                    <!-- Add these hidden fields -->
-                        <input type="hidden" name="pathao_city_id" id="pathao_city_id_input" value="">
-                        <input type="hidden" name="pathao_zone_id" id="pathao_zone_id_input" value="">
-                        <input type="hidden" name="pathao_area_id" id="pathao_area_id_input" value="">
-                        
-                        <!-- Rest of your form -->
                     <!-- Billing Information Fields -->
                     <div class="form-row">
                         <div class="col-md-6 col-sm-12 form-group">
@@ -53,61 +47,27 @@
                         </div>
                     </div>
 
-                    <div class="form-row">
+                    <!-- <div class="form-row">
                         <div class="col-md-4 col-sm-12 form-group">
-                            <label for="pathao_city_id">City</label>
-                            <select name="pathao_city_id" id="pathao_city_id" class="form-control" >
-                                <option value="">Select City</option>
-                                {% for city in cities %}
-                                    <option value="{{ city.city_id }}">{{ city.city_name }}</option>
-                                {% endfor %}
-                            </select>
+                            <label for="city">City</label>
+                            <input type="text" name="city" class="form-control" required>
                         </div>
                         <div class="col-md-4 col-sm-12 form-group">
-                            <label for="pathao_zone_id">Zone</label>
-                            <select name="pathao_zone_id" id="pathao_zone_id" class="form-control" >
-                                <option value="">Select Zone</option>
-                            </select>
+                            <label for="state">State</label>
+                            <input type="text" name="state" class="form-control" required>
                         </div>
                         <div class="col-md-4 col-sm-12 form-group">
-                            <label for="pathao_area_id">Area</label>
-                            <select name="pathao_area_id" id="pathao_area_id" class="form-control">
-                                <option value="">Select Area</option>
-                            </select>
+                            <label for="country">Country</label>
+                            <input type="text" name="country" class="form-control" required>
                         </div>
-                    </div>
+                    </div> -->
 
                     <div class="form-row">
                         <div class="col-12 form-group">
                             <label for="order_note">Order Note</label>
-                            <textarea name="order_note" rows="2" class="form-control"></textarea>
+                            <textarea name="order_note" rows='2' class="form-control"></textarea>
                         </div>
                     </div>
-
-                    <!-- Payment Method Selection -->
-                    <div class="form-group mt-4">
-                        <label>Payment Method</label>
-                        <div class="payment-options">
-                            <div class="payment-option mb-2">
-                                <input type="radio" class="payment-radio" name="payment_method" id="cod" value="Cash on Delivery" required>
-                                <label class="payment-label" for="cod">
-                                    <span class="payment-icon">💵</span>
-                                    Cash on Delivery
-                                </label>
-                            </div>
-                            <div class="payment-option">
-                                <input type="radio" class="payment-radio" name="payment_method" id="ssl" value="SSLcommerz">
-                                <label class="payment-label" for="ssl">
-                                    <span class="payment-icon">💳</span>
-                                    SSLcommerz
-                                </label>
-                            </div>
-                        </div>
-                    </div>
-
-                    <button type="submit" class="btn btn-dark btn-block mb-2">Place Order</button>
-                    <a href="{% url 'store' %}" class="btn btn-light btn-block">Continue Shopping</a>
-                </form>
             </div>
         </div>
     </aside>
@@ -158,6 +118,32 @@
                     {% endif %}
                     {% endfor %}
                 </div>
+
+                <!-- Payment Method Selection -->
+                <div class="form-group mt-4">
+                    <label>Payment Method</label>
+                    <div class="payment-options">
+                        <div class="payment-option mb-2">
+                            <input type="radio" class="payment-radio" name="payment_method" id="cod" value="Cash on Delivery" required>
+                            <label class="payment-label" for="cod">
+                                <span class="payment-icon">💵</span>
+                                Cash on Delivery
+                            </label>
+                        </div>
+                        
+                        <div class="payment-option">
+                            <input type="radio" class="payment-radio" name="payment_method" id="ssl" value="SSLcommerz">
+                            <label class="payment-label" for="ssl">
+                                <span class="payment-icon">💳</span>
+                                SSLcommerz
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-dark btn-block mb-2">Place Order</button>
+                <a href="{% url 'store' %}" class="btn btn-light btn-block">Continue Shopping</a>
+                </form>
             </div>
         </div>
     </aside>
@@ -165,94 +151,6 @@
 
 </div>
 </section>
-
-
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-<script>
-
-    $(document).ready(function() {
-   
-    
-    // When zone selection changes
-    $('#pathao_zone_id').change(function() {
-        
-    });
-    
-    // When area selection changes
-    $('#pathao_area_id').change(function() {
-        
-    });
-});
-$(document).ready(function() {
-    function addOptions($select, list, idKeys, nameKeys) {
-        $select.empty().append($('<option>', { value: '', text: 'Select ' + $select.data('label') }));
-        $.each(list || [], function(_, item) {
-            let id = null, name = null;
-            idKeys.forEach(k => { if (item[k] !== undefined && id === null) id = item[k]; });
-            nameKeys.forEach(k => { if (item[k] !== undefined && name === null) name = item[k]; });
-            if (id !== null && name !== null) {
-                $select.append($('<option>', { value: id, text: name }));
-            }
-        });
-    }
-
-
-
-
-    $('#pathao_city_id').change(function() {
-        $('#pathao_city_id_input').val($(this).val());
-        let city_id = $(this).val();
-        if (!city_id) {
-            $('#pathao_zone_id').html('<option value="">Select Zone</option>');
-            $('#pathao_area_id').html('<option value="">Select Area</option>');
-            return;
-        }
-        $.ajax({
-            url: "{% url 'get_zones' %}",
-            data: { city_id: city_id },
-            dataType: 'json',
-            success: function(data) {
-                console.log('Zones data:', data);
-                if (data.error) {
-                    alert('Error: ' + data.error);
-                    return;
-                }
-                addOptions($('#pathao_zone_id'), data.zones, ['zone_id','zoneId','id'], ['zone_name','zoneName','name']);
-                $('#pathao_area_id').html('<option value="">Select Area</option>');  // Reset areas
-            },
-            error: function(xhr) {
-                console.error(xhr.responseText);
-                alert('Failed to load zones.');
-            }
-        });
-    });
-
-    $('#pathao_zone_id').change(function() {
-        $('#pathao_zone_id_input').val($(this).val());
-        let zone_id = $(this).val();
-        if (!zone_id) {
-            $('#pathao_area_id').html('<option value="">Select Area</option>');
-            return;
-        }
-        $.ajax({
-            url: "{% url 'get_areas' %}",
-            data: { zone_id: zone_id },
-            dataType: 'json',
-            success: function(data) {
-                if (data.error) {
-                    alert('Error: ' + data.error);
-                    return;
-                }
-                addOptions($('#pathao_area_id'), data.areas, ['area_id','areaId','id'], ['area_name','areaName','name']);
-            },
-            error: function(xhr) {
-                console.error(xhr.responseText);
-                alert('Failed to load areas.');
-            }
-        });
-    });
-});
-</script>
 
 <style>
 .payment-options {

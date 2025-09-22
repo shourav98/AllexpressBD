@@ -1,0 +1,106 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-12">
+            <h2 class="mb-4">Parcel Management Dashboard</h2>
+        </div>
+    </div>
+
+    <!-- Statistics Cards -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card bg-primary text-white">
+                <div class="card-body">
+                    <h5 class="card-title">Total Parcels</h5>
+                    <h3>{{ total_parcels }}</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-warning text-white">
+                <div class="card-body">
+                    <h5 class="card-title">Pending</h5>
+                    <h3>{{ pending_parcels }}</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-success text-white">
+                <div class="card-body">
+                    <h5 class="card-title">Delivered</h5>
+                    <h3>{{ delivered_parcels }}</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-danger text-white">
+                <div class="card-body">
+                    <h5 class="card-title">Cancelled</h5>
+                    <h3>{{ cancelled_parcels }}</h3>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Parcels -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5>Recent Parcels</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Order</th>
+                                    <th>Consignment ID</th>
+                                    <th>Status</th>
+                                    <th>Delivery Fee</th>
+                                    <th>Created</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for parcel in recent_parcels %}
+                                <tr>
+                                    <td>{{ parcel.order.order_number }}</td>
+                                    <td>{{ parcel.consignment_id|default:"-" }}</td>
+                                    <td>
+                                        <span class="badge
+                                            {% if parcel.delivery_status == 'Delivered' %}badge-success
+                                            {% elif parcel.delivery_status == 'Pending' %}badge-warning
+                                            {% elif parcel.delivery_status == 'Cancelled' %}badge-danger
+                                            {% else %}badge-info{% endif %}">
+                                            {{ parcel.delivery_status }}
+                                        </span>
+                                    </td>
+                                    <td>{{ parcel.delivery_fee|default:0 }}</td>
+                                    <td>{{ parcel.created_at|date:"M d, Y H:i" }}</td>
+                                    <td>
+                                        {% if parcel.consignment_id %}
+                                        <a href="{% url 'parcel_detail' parcel.consignment_id %}" class="btn btn-sm btn-outline-primary">View</a>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="6" class="text-center">No parcels found</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="mt-3">
+                        <a href="{% url 'parcel_list' %}" class="btn btn-primary">View All Parcels</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

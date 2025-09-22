@@ -1,0 +1,164 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2>Parcel Management</h2>
+                <a href="{% url 'parcel_dashboard' %}" class="btn btn-outline-primary">Dashboard</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="row mb-3">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    <form method="get" class="row g-3">
+                        <div class="col-md-4">
+                            <label for="status" class="form-label">Status</label>
+                            <select name="status" id="status" class="form-select">
+                                <option value="">All Status</option>
+                                <option value="Pending" {% if status_filter == 'Pending' %}selected{% endif %}>Pending</option>
+                                <option value="Picked" {% if status_filter == 'Picked' %}selected{% endif %}>Picked</option>
+                                <option value="In Transit" {% if status_filter == 'In Transit' %}selected{% endif %}>In Transit</option>
+                                <option value="Delivered" {% if status_filter == 'Delivered' %}selected{% endif %}>Delivered</option>
+                                <option value="Cancelled" {% if status_filter == 'Cancelled' %}selected{% endif %}>Cancelled</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label for="search" class="form-label">Search</label>
+                            <input type="text" name="search" id="search" class="form-control" placeholder="Order number or Consignment ID" value="{{ search_query }}">
+                        </div>
+                        <div class="col-md-4 d-flex align-items-end">
+                            <button type="submit" class="btn btn-primary me-2">Filter</button>
+                            <a href="{% url 'parcel_list' %}" class="btn btn-outline-secondary">Clear</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bulk Actions -->
+    <div class="row mb-3">
+        <div class="col-12">
+            <form method="post" action="{% url 'bulk_parcel_actions' %}">
+                {% csrf_token %}
+                <div class="card">
+                    <div class="card-body">
+                        <div class="row g-3">
+                            <div class="col-md-3">
+                                <select name="action" class="form-select">
+                                    <option value="">Select Action</option>
+                                    <option value="refresh_status">Refresh Status</option>
+                                    <option value="mark_delivered">Mark as Delivered</option>
+                                    <option value="export_csv">Export to CSV</option>
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <button type="submit" class="btn btn-success">Apply to Selected</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Parcels Table -->
+                <div class="card mt-3">
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-striped">
+                                <thead>
+                                    <tr>
+                                        <th><input type="checkbox" id="select-all"></th>
+                                        <th>Order</th>
+                                        <th>Consignment ID</th>
+                                        <th>Status</th>
+                                        <th>Delivery Fee</th>
+                                        <th>Created</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for parcel in page_obj %}
+                                    <tr>
+                                        <td><input type="checkbox" name="parcel_ids" value="{{ parcel.id }}"></td>
+                                        <td>{{ parcel.order.order_number }}</td>
+                                        <td>{{ parcel.consignment_id|default:"-" }}</td>
+                                        <td>
+                                            <span class="badge
+                                                {% if parcel.delivery_status == 'Delivered' %}badge-success
+                                                {% elif parcel.delivery_status == 'Pending' %}badge-warning
+                                                {% elif parcel.delivery_status == 'Cancelled' %}badge-danger
+                                                {% else %}badge-info{% endif %}">
+                                                {{ parcel.delivery_status }}
+                                            </span>
+                                        </td>
+                                        <td>{{ parcel.delivery_fee|default:0 }}</td>
+                                        <td>{{ parcel.created_at|date:"M d, Y H:i" }}</td>
+                                        <td>
+                                            {% if parcel.consignment_id %}
+                                            <a href="{% url 'parcel_detail' parcel.consignment_id %}" class="btn btn-sm btn-outline-primary">View</a>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                    {% empty %}
+                                    <tr>
+                                        <td colspan="7" class="text-center">No parcels found</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Pagination -->
+    {% if page_obj.has_other_pages %}
+    <div class="row">
+        <div class="col-12">
+            <nav aria-label="Parcel pagination">
+                <ul class="pagination justify-content-center">
+                    {% if page_obj.has_previous %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if status_filter %}&status={{ status_filter }}{% endif %}{% if search_query %}&search={{ search_query }}{% endif %}">Previous</a>
+                    </li>
+                    {% endif %}
+
+                    {% for num in page_obj.paginator.page_range %}
+                    {% if page_obj.number == num %}
+                    <li class="page-item active">
+                        <a class="page-link" href="#">{{ num }}</a>
+                    </li>
+                    {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ num }}{% if status_filter %}&status={{ status_filter }}{% endif %}{% if search_query %}&search={{ search_query }}{% endif %}">{{ num }}</a>
+                    </li>
+                    {% endif %}
+                    {% endfor %}
+
+                    {% if page_obj.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if status_filter %}&status={{ status_filter }}{% endif %}{% if search_query %}&search={{ search_query }}{% endif %}">Next</a>
+                    </li>
+                    {% endif %}
+                </ul>
+            </nav>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<script>
+document.getElementById('select-all').addEventListener('change', function() {
+    const checkboxes = document.querySelectorAll('input[name="parcel_ids"]');
+    checkboxes.forEach(cb => cb.checked = this.checked);
+});
+</script>
+{% endblock %}

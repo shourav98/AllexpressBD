@@ -769,7 +769,7 @@
             <div class="gallery-section">
                 <div class="main-image" id="mainImage">
                     <img src="{{ single_product.images.url|default:'/static/images/placeholder.jpg' }}" id="mainImg" alt="{{ single_product.name|default:'Product Image' }}">
-                    {% if single_product.discounted_price != single_product.price %}
+                    {% if single_product.discounted_price_annotated != single_product.price %}
                         <span class="discount-badge">-{{ single_product.discount_percentage|default:'0' }}% OFF</span>
                     {% endif %}
                 </div>
@@ -792,13 +792,23 @@
                 <form action="{% url 'add_cart' single_product.id %}" method="POST">
                     {% csrf_token %}
                     <div class="product-brand">
-                        <a href="{% url 'products_by_category' single_product.category.slug %}">{{ single_product.category|default:'No Category' }}</a>
+                        {% if single_product.category %}
+                            <a href="{% url 'products_by_category' single_product.category.slug %}">
+                                {{ single_product.category }}
+                            </a>
+                        {% elif single_product.brand %}
+                            <a href="{% url 'products_by_brand' single_product.brand.slug %}">
+                                {{ single_product.brand }}
+                            </a>
+                        {% else %}
+                            <span>Uncategorized</span>
+                        {% endif %}
                     </div>
                     <h1 class="product-name">{{ single_product.name|default:'Unnamed Product' }}</h1>
 
                     <div class="product-price">
-                        {% if single_product.discounted_price != single_product.price %}
-                            <span class="discounted">TK {{ single_product.discounted_price|floatformat:2 }}</span>
+                        {% if single_product.discounted_price_annotated != single_product.price %}
+                            <span class="discounted">TK {{ single_product.discounted_price_annotated|floatformat:2 }}</span>
                             <span class="original">TK {{ single_product.price|floatformat:2 }}</span>
 
                         {% else %}
@@ -1130,7 +1140,15 @@
     <div class="related-products">
         <div class="related-header">
             <h3>You May Also Like</h3>
-            <a href="{% url 'products_by_category' single_product.category.slug %}" class="btn btn-outline-dark">View All</a>
+            {% if single_product.category %}
+                <a href="{% url 'products_by_category' single_product.category.slug %}" class="btn btn-outline-dark">
+                    View All in {{ single_product.category.name }}
+                </a>
+            {% elif single_product.brand %}
+                <a href="{% url 'products_by_brand' single_product.brand.slug %}" class="btn btn-outline-dark">
+                    View All in {{ single_product.brand.name }}
+                </a>
+            {% endif %}
         </div>
         <div class="related-grid" id="relatedProductsGrid">
             {% for product in related_products %}
@@ -1138,15 +1156,15 @@
                     <a href="{% url 'product_detail' product.category.slug product.slug %}" data-product-id="{{ product.id }}" data-product-slug="{{ product.slug }}" data-category-slug="{{ product.category.slug }}" class="text-decoration-none">
                         <div class="related-image">
                             <img src="{{ product.images.url|default:'/static/images/placeholder.jpg' }}" alt="{{ product.name|default:'Product Image' }}">
-                            {% if product.discounted_price != product.price %}
+                            {% if product.discounted_price_annotated != product.price %}
                                 <span class="discount-badge">-{{ product.discount_percentage|default:'50' }}%</span>
                             {% endif %}
                         </div>
                         <div class="related-info">
                             <div class="related-name">{{ product.name|default:'Unnamed Product' }}</div>
                             <div class="related-price">
-                                {% if product.discounted_price != product.price %}
-                                    <span class="discounted">TK {{ product.discounted_price|floatformat:2 }}</span>
+                                {% if product.discounted_price_annotated != product.price %}
+                                    <span class="discounted">TK {{ product.discounted_price_annotated|floatformat:2 }}</span>
                                     <span class="original">TK {{ product.price|floatformat:2 }}</span>
                                 {% else %}
                                     <span class="discounted">TK {{ product.price|floatformat:2 }}</span>

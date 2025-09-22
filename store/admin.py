@@ -2,6 +2,7 @@ from django.contrib import admin
 from .models import Product, Variation, ReviewRating, ProductGallery, InventoryLog
 import admin_thumbnails
 from unfold.admin import ModelAdmin
+from django.utils.html import format_html
 # Register your models here.
 #  PRODUCTS
 # ---------------------------
@@ -10,19 +11,29 @@ class ProductGalleryInline(admin.TabularInline):
     model = ProductGallery
     extra = 1
 
+class VariationInline(admin.TabularInline):   # or admin.StackedInline for a bigger form
+    model = Variation
+    extra = 1   # number of empty forms to display
 
 @admin.register(Product)
 class ProductAdmin(ModelAdmin):
-    list_display = ("name", "price", "stock", 'low_stock', "category", "modified_date", "is_available")
+    list_display = ("name","show_images", "price", "stock", 'low_stock', "category", "modified_date", "is_available")
     list_editable = ('stock', 'is_available')
-    list_filter = ('is_available',"category",)
+    list_filter = ('is_available', "category",)
     prepopulated_fields = {"slug": ("name",)}
-    inlines = [ProductGalleryInline]
+    # inlines = [ProductGalleryInline]
+    inlines = [ProductGalleryInline, VariationInline]  # ✅ Added variations inline
 
     def low_stock(self, obj):
         return obj.stock < 5  # Highlight if stock < 5
     low_stock.boolean = True
     low_stock.short_description = "Low Stock (<5)"
+
+    def show_images(self, obj):
+        if obj.images:
+            return format_html('<img src="{}" width="50" height="50" style="object-fit:cover;" />', obj.images.url)
+        return "No Image"
+    show_images.short_description = "Image"
 
 
 

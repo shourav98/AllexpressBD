@@ -1,0 +1,206 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-12">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{% url 'parcel_dashboard' %}">Dashboard</a></li>
+                    <li class="breadcrumb-item"><a href="{% url 'parcel_list' %}">Parcels</a></li>
+                    <li class="breadcrumb-item active">{{ parcel.consignment_id }}</li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h5>Parcel Details</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6>Order Information</h6>
+                            <p><strong>Order Number:</strong> {{ parcel.order.order_number }}</p>
+                            <p><strong>Customer:</strong> {{ parcel.order.full_name }}</p>
+                            <p><strong>Phone:</strong> {{ parcel.order.phone }}</p>
+                            <p><strong>Address:</strong> {{ parcel.order.full_address }}</p>
+                            <p><strong>Order Total:</strong> {{ parcel.order.order_total }}</p>
+                        </div>
+                        <div class="col-md-6">
+                            <h6>Shipping Information</h6>
+                            <p><strong>Consignment ID:</strong> {{ parcel.consignment_id|default:"Not assigned" }}</p>
+                            <p><strong>Status:</strong>
+                                <span class="badge
+                                    {% if parcel.delivery_status == 'Delivered' %}badge-success
+                                    {% elif parcel.delivery_status == 'Pending' %}badge-warning
+                                    {% elif parcel.delivery_status == 'Cancelled' %}badge-danger
+                                    {% else %}badge-info{% endif %}">
+                                    {{ parcel.delivery_status }}
+                                </span>
+                            </p>
+                            <p><strong>Delivery Fee:</strong> {{ parcel.delivery_fee|default:0 }}</p>
+                            <p><strong>Created:</strong> {{ parcel.created_at|date:"M d, Y H:i" }}</p>
+                            <p><strong>Updated:</strong> {{ parcel.updated_at|date:"M d, Y H:i" }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tracking Information -->
+            {% if tracking_data %}
+            <div class="card mt-3">
+                <div class="card-header">
+                    <h6>Tracking Information</h6>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <p><strong>Current Status:</strong> {{ tracking_data.order_status }}</p>
+                            <p><strong>Last Update:</strong> {{ tracking_data.updated_at|default:"N/A" }}</p>
+                        </div>
+                        <div class="col-md-6">
+                            {% if tracking_data.delivery_man %}
+                            <p><strong>Delivery Person:</strong> {{ tracking_data.delivery_man.name }}</p>
+                            <p><strong>Contact:</strong> {{ tracking_data.delivery_man.phone }}</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Order Items -->
+            <div class="card mt-3">
+                <div class="card-header">
+                    <h6>Order Items</h6>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Product</th>
+                                    <th>Quantity</th>
+                                    <th>Price</th>
+                                    <th>Total</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for item in parcel.order.orderproduct_set.all %}
+                                <tr>
+                                    <td>{{ item.product.name }}</td>
+                                    <td>{{ item.quantity }}</td>
+                                    <td>{{ item.product_price }}</td>
+                                    <td>{{ item.total_amount }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <!-- Actions -->
+            <div class="card">
+                <div class="card-header">
+                    <h6>Actions</h6>
+                </div>
+                <div class="card-body">
+                    {% if parcel.consignment_id %}
+                    <form method="post" action="{% url 'refresh_parcel_status' parcel.consignment_id %}" class="mb-2">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-primary btn-sm w-100">Refresh Status</button>
+                    </form>
+
+                    {% if parcel.delivery_status not in 'Delivered|Cancelled' %}
+                    <form method="post" action="{% url 'cancel_parcel' parcel.consignment_id %}" class="mb-2"
+                          onsubmit="return confirm('Are you sure you want to cancel this parcel?')">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-danger btn-sm w-100">Cancel Parcel</button>
+                    </form>
+                    {% endif %}
+
+                    <a href="https://merchant.pathao.com/tracking/{{ parcel.consignment_id }}" target="_blank" class="btn btn-outline-primary btn-sm w-100 mb-2">Track on Pathao</a>
+                    {% endif %}
+
+                    <a href="{% url 'admin:orders_order_change' parcel.order.id %}" target="_blank" class="btn btn-outline-secondary btn-sm w-100">View Order in Admin</a>
+                </div>
+            </div>
+
+            <!-- Status History -->
+            {% if tracking_data and tracking_data.status_history %}
+            <div class="card mt-3">
+                <div class="card-header">
+                    <h6>Status History</h6>
+                </div>
+                <div class="card-body">
+                    <div class="timeline">
+                        {% for status in tracking_data.status_history %}
+                        <div class="timeline-item">
+                            <div class="timeline-marker"></div>
+                            <div class="timeline-content">
+                                <h6>{{ status.status }}</h6>
+                                <p>{{ status.timestamp|date:"M d, Y H:i" }}</p>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<style>
+.timeline {
+    position: relative;
+    padding-left: 30px;
+}
+
+.timeline-item {
+    position: relative;
+    margin-bottom: 20px;
+}
+
+.timeline-marker {
+    position: absolute;
+    left: -35px;
+    top: 0;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background-color: #007bff;
+    border: 2px solid #fff;
+    box-shadow: 0 0 0 2px #dee2e6;
+}
+
+.timeline-item:not(:last-child)::before {
+    content: '';
+    position: absolute;
+    left: -29px;
+    top: 12px;
+    width: 2px;
+    height: calc(100% + 8px);
+    background-color: #dee2e6;
+}
+
+.timeline-content h6 {
+    margin-bottom: 5px;
+    font-size: 14px;
+}
+
+.timeline-content p {
+    margin-bottom: 0;
+    color: #6c757d;
+    font-size: 12px;
+}
+</style>
+{% endblock %}

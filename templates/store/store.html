@@ -617,7 +617,7 @@
                                 <div class="product-image">
                                     <a href="{{ product.get_url }}">
                                         <img src="{{ product.images.url|default:'/static/images/placeholder.jpg' }}" alt="{{ product.name }}">
-                                        {% if product.discounted_price != product.price %}
+                                        {% if product.discounted_price_annotated != product.price %}
                                             <span class="discount-badge">-{{ product.discount_percentage|default:'50' }}%</span>
                                         {% endif %}
                                     </a>
@@ -626,8 +626,8 @@
                                     <div>
                                         <h3 class="product-title">{{ product.name }}</h3>
                                         <div class="product-price">
-                                            {% if product.discounted_price != product.price %}
-                                                <span class="discounted-price">TK {{ product.discounted_price|floatformat:2 }}</span>
+                                            {% if product.discounted_price_annotated != product.price %}
+                                                <span class="discounted-price">TK {{ product.discounted_price_annotated|floatformat:2 }}</span>
                                                 <span class="original-price">TK {{ product.price|floatformat:2 }}</span>
                                             {% else %}
                                                 <span class="discounted-price">TK {{ product.price|floatformat:2 }}</span>
@@ -677,18 +677,24 @@
                 {% if recent_products %}
                     {% for product in recent_products %}
                         <div class="recently-viewed-item">
-                            <a href="{% url 'product_detail' product.category.slug product.slug %}" class="recently-viewed-link">
+                            {% if product.category %}
+                                <a href="{% url 'product_detail' product.category.slug product.slug %}" class="recently-viewed-link">
+                            {% elif product.brand %}
+                                <a href="{% url 'product_detail_by_brand' product.brand.slug product.slug %}" class="recently-viewed-link">
+                            {% else %}
+                                <a href="#" class="recently-viewed-link disabled">
+                            {% endif %}
                                 <div class="recently-viewed-img">
                                     <img src="{{ product.images.url|default:'/static/images/placeholder.jpg' }}" alt="{{ product.name }}">
-                                    {% if product.discounted_price != product.price %}
+                                    {% if product.discounted_price_annotated != product.price %}
                                         <span class="discount-badge">-{{ product.discount_percentage|default:'50' }}%</span>
                                     {% endif %}
                                 </div>
                                 <div class="recently-viewed-info">
                                     <h3 class="recently-viewed-name">{{ product.name }}</h3>
                                     <div class="recently-viewed-price">
-                                        {% if product.discounted_price != product.price %}
-                                            <span class="discounted-price">TK {{ product.discounted_price|floatformat:2 }}</span>
+                                        {% if product.discounted_price_annotated != product.price %}
+                                            <span class="discounted-price">TK {{ product.discounted_price_annotated|floatformat:2 }}</span>
                                             <small class="original-price">TK {{ product.price|floatformat:2 }}</small>
                                         {% else %}
                                             <span>TK {{ product.price|floatformat:2 }}</span>

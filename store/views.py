@@ -5,6 +5,7 @@ from carts.models import CartItem
 from carts.views import _cart_id
 from django.core.paginator import Paginator
 from django.db.models import Q, Count, F, ExpressionWrapper, DecimalField
+from django.db.models.functions import Coalesce
 from .forms import ReviewForm
 from django.contrib import messages
 from orders.models import OrderProduct
@@ -43,8 +44,8 @@ def store(request, category_slug=None, brand_slug=None):
     size = request.GET.get('size')
     if size:
         products = products.filter(
-            variation__variation_category='size',
-            variation__variation_value=size
+            variations__variation_category='size',
+            variations__variation_value=size
         )
 
     # Apply price filter
@@ -53,8 +54,12 @@ def store(request, category_slug=None, brand_slug=None):
 
     # Annotate discounted price
     products = products.annotate(
-        calculated_discounted_price=ExpressionWrapper(
-            F('price') - (F('price') * F('discount_percentage') / 100),
+        discounted_price_annotated=Coalesce(
+            ExpressionWrapper(
+                F('price') - (F('price') * F('discount_percentage') / 100),
+                output_field=DecimalField(max_digits=10, decimal_places=2)
+            ),
+            F('price'),
             output_field=DecimalField(max_digits=10, decimal_places=2)
         )
     )
@@ -63,8 +68,7 @@ def store(request, category_slug=None, brand_slug=None):
         price_min = Decimal(price_min)
         price_max = Decimal(price_max)
         products = products.filter(
-            Q(calculated_discounted_price__gte=price_min, calculated_discounted_price__lte=price_max) |
-            Q(discount_percentage__isnull=True, price__gte=price_min, price__lte=price_max)
+            discounted_price_annotated__gte=price_min, discounted_price_annotated__lte=price_max
         )
     except (ValueError, TypeError):
         pass
@@ -77,6 +81,16 @@ def store(request, category_slug=None, brand_slug=None):
             orderproduct__order__is_ordered=True,
         )
         .annotate(sales_count=Count("orderproduct"))
+        .annotate(
+            discounted_price_annotated=Coalesce(
+                ExpressionWrapper(
+                    F('price') - (F('price') * F('discount_percentage') / 100),
+                    output_field=DecimalField(max_digits=10, decimal_places=2)
+                ),
+                F('price'),
+                output_field=DecimalField(max_digits=10, decimal_places=2)
+            )
+        )
         .order_by("-sales_count", "-created_date")[:6]
     )
 
@@ -94,7 +108,16 @@ def store(request, category_slug=None, brand_slug=None):
 
     # Recently viewed products
     recent_product_ids = request.session.get('recently_viewed', [])
-    recent_products = Product.objects.filter(id__in=recent_product_ids, is_available=True)[:8]
+    recent_products = Product.objects.filter(id__in=recent_product_ids, is_available=True).annotate(
+        discounted_price_annotated=Coalesce(
+            ExpressionWrapper(
+                F('price') - (F('price') * F('discount_percentage') / 100),
+                output_field=DecimalField(max_digits=10, decimal_places=2)
+            ),
+            F('price'),
+            output_field=DecimalField(max_digits=10, decimal_places=2)
+        )
+    )[:8]
 
     # Parent categories & brands
     parent_categories = Category.objects.filter(parent__isnull=True, is_active=True)
@@ -179,6 +202,15 @@ def search(request):
         products = Product.objects.filter(
             Q(description__icontains=keyword) | Q(name__icontains=keyword),
             is_available=True
+        ).annotate(
+            discounted_price_annotated=Coalesce(
+                ExpressionWrapper(
+                    F('price') - (F('price') * F('discount_percentage') / 100),
+                    output_field=DecimalField(max_digits=10, decimal_places=2)
+                ),
+                F('price'),
+                output_field=DecimalField(max_digits=10, decimal_places=2)
+            )
         ).order_by("created_date")
         product_count = products.count()
 
@@ -233,7 +265,7 @@ def products_by_brand(request, brand_slug):
     price_max = request.GET.get('price_max', 5000)
 
     if size:
-        products = products.filter(variation__variation_category='size', variation__variation_value=size)
+        products = products.filter(variations__variation_category='size', variations__variation_value=size)
     
     try:
         price_min = Decimal(price_min)
@@ -241,6 +273,18 @@ def products_by_brand(request, brand_slug):
         products = products.filter(price__gte=price_min, price__lte=price_max)
     except (ValueError, TypeError):
         pass
+
+    # Annotate discounted price
+    products = products.annotate(
+        discounted_price_annotated=Coalesce(
+            ExpressionWrapper(
+                F('price') - (F('price') * F('discount_percentage') / 100),
+                output_field=DecimalField(max_digits=10, decimal_places=2)
+            ),
+            F('price'),
+            output_field=DecimalField(max_digits=10, decimal_places=2)
+        )
+    )
 
     # Pagination
     paginator = Paginator(products, 12)
@@ -254,6 +298,15 @@ def products_by_brand(request, brand_slug):
         search_products = Product.objects.filter(
             Q(description__icontains=keyword) | Q(name__icontains=keyword),
             is_available=True, brand=brand
+        ).annotate(
+            discounted_price_annotated=Coalesce(
+                ExpressionWrapper(
+                    F('price') - (F('price') * F('discount_percentage') / 100),
+                    output_field=DecimalField(max_digits=10, decimal_places=2)
+                ),
+                F('price'),
+                output_field=DecimalField(max_digits=10, decimal_places=2)
+            )
         ).order_by("created_date")
         paged_products = search_products
 
@@ -261,7 +314,16 @@ def products_by_brand(request, brand_slug):
     if 'recently_viewed' not in request.session:
         request.session['recently_viewed'] = []
     recent_product_ids = request.session['recently_viewed']
-    recent_products = Product.objects.filter(id__in=recent_product_ids, is_available=True)[:8]
+    recent_products = Product.objects.filter(id__in=recent_product_ids, is_available=True).annotate(
+        discounted_price_annotated=Coalesce(
+            ExpressionWrapper(
+                F('price') - (F('price') * F('discount_percentage') / 100),
+                output_field=DecimalField(max_digits=10, decimal_places=2)
+            ),
+            F('price'),
+            output_field=DecimalField(max_digits=10, decimal_places=2)
+        )
+    )[:8]
 
     parent_categories = Category.objects.filter(parent__isnull=True, is_active=True)
     brands = Brand.objects.filter(is_active=True)  # For navigation
@@ -287,9 +349,33 @@ def product_detail(request, category_slug=None, product_slug=None, brand_slug=No
 
     try:
         if category_slug:
-            single_product = Product.objects.get(category__slug=category_slug, slug=product_slug)
+            single_product = get_object_or_404(
+                Product.objects.annotate(
+                    discounted_price_annotated=Coalesce(
+                        ExpressionWrapper(
+                            F('price') - (F('price') * F('discount_percentage') / 100),
+                            output_field=DecimalField(max_digits=10, decimal_places=2)
+                        ),
+                        F('price'),
+                        output_field=DecimalField(max_digits=10, decimal_places=2)
+                    )
+                ),
+                category__slug=category_slug, slug=product_slug
+            )
         elif brand_slug:
-            single_product = Product.objects.get(brand__slug=brand_slug, slug=product_slug)
+            single_product = get_object_or_404(
+                Product.objects.annotate(
+                    discounted_price_annotated=Coalesce(
+                        ExpressionWrapper(
+                            F('price') - (F('price') * F('discount_percentage') / 100),
+                            output_field=DecimalField(max_digits=10, decimal_places=2)
+                        ),
+                        F('price'),
+                        output_field=DecimalField(max_digits=10, decimal_places=2)
+                    )
+                ),
+                brand__slug=brand_slug, slug=product_slug
+            )
         else:
             raise Product.DoesNotExist
 
@@ -305,7 +391,16 @@ def product_detail(request, category_slug=None, product_slug=None, brand_slug=No
             request.session.modified = True
 
         # Related products (excluding current one)
-        related_products = Product.objects.filter(is_available=True).exclude(id=single_product.id)[:6]
+        related_products = Product.objects.filter(is_available=True).exclude(id=single_product.id).annotate(
+            discounted_price_annotated=Coalesce(
+                ExpressionWrapper(
+                    F('price') - (F('price') * F('discount_percentage') / 100),
+                    output_field=DecimalField(max_digits=10, decimal_places=2)
+                ),
+                F('price'),
+                output_field=DecimalField(max_digits=10, decimal_places=2)
+            )
+        )[:6]
 
     except Product.DoesNotExist:
         single_product, in_cart, related_products = None, False, []

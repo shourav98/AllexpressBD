@@ -2,44 +2,35 @@ from pathlib import Path
 import environ
 from django.contrib.messages import constants as messages
 from django.templatetags.static import static
+# from decouple import config
 
 from django.urls import reverse_lazy
 from django.utils.translation import gettext_lazy as _
 
-
-# Initialize the environment variables
+import os
 env = environ.Env()
-environ.Env.read_env()
+
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+
+# Initialize the environment variables
+env = environ.Env()
+env.read_env(BASE_DIR / '.env')
 
 # Quick-start development settings - unsuitable for production
 SECRET_KEY = env('SECRET_KEY')
 
 DEBUG = env.bool('DEBUG', default=True)
 
-ALLOWED_HOSTS = [
-    "allexpressbd-1.onrender.com",
-    "localhost",
-    "127.0.0.1",
-    "*.ngrok.io",
-    "*.ngrok-free.app",
-    "5983-103-174-189-33.ngrok-free.app",  # Add the exact ngrok URL
-    "ariyanfootwear.com",
-    "www.ariyanfootwear.com"
-]
+ALLOWED_HOSTS = env.list('ALLOWED_HOSTS')
 
-CSRF_TRUSTED_ORIGINS = env.list('CSRF_TRUSTED_ORIGINS', default=[
-    'https://sandbox.sslcommerz.com',
-    'http://127.0.0.1',
-    'https://*.ngrok.io',
-    'https://*.ngrok-free.app',
-    'https://5983-103-174-189-33.ngrok-free.app',  # Add the exact ngrok URL
-])
+
+CSRF_TRUSTED_ORIGINS = env.list('CSRF_TRUSTED_ORIGINS')
+
 
 # Add BASE_URL (replace with your ngrok URL or production URL)
-BASE_URL = env('BASE_URL', default='https://5983-103-174-189-33.ngrok-free.app')
+BASE_URL = env('BASE_URL', default='https://47aa47631504.ngrok-free.app')
 
 # Application definition
 INSTALLED_APPS = [
@@ -59,6 +50,8 @@ INSTALLED_APPS = [
     'store',
     'carts',
     'orders',
+    'parcel',
+  
 ]
 
 MIDDLEWARE = [
@@ -103,6 +96,17 @@ DATABASES = {
     }
 }
 
+# DATABASES for mysql
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.mysql',
+#         'NAME': env('DB_NAME'),   
+#         'USER': env('DB_USER'),
+#         'PASSWORD': env('DB_PASSWORD'),
+#         'HOST': env('DB_HOST'),
+#         'PORT': env('DB_PORT'),
+
+
 # Password validation
 AUTH_PASSWORD_VALIDATORS = [
     {
@@ -140,6 +144,26 @@ LOGGING = {
     },
 }
 
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {
+        'file': {
+            'level': 'ERROR',
+            'class': 'logging.FileHandler',
+            'filename': 'pathao_errors.log',
+        },
+    },
+    'loggers': {
+        '': {
+            'handlers': ['file'],
+            'level': 'ERROR',
+            'propagate': True,
+        },
+    },
+}
+
 # Internationalization
 LANGUAGE_CODE = 'en-us'
 USE_I18N = True
@@ -166,14 +190,32 @@ MESSAGE_TAGS = {
 SSLCOMMERZ_STORE_ID = env('SSLCOMMERZ_STORE_ID')
 SSLCOMMERZ_STORE_PASS = env('SSLCOMMERZ_STORE_PASS')
 
-# Email configuration
-EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST = 'smtp.gmail.com'
-EMAIL_PORT = 587
-EMAIL_USE_TLS = True
-EMAIL_HOST_USER = 'sir665904@gmail.com'
-EMAIL_HOST_PASSWORD = 'bjsw izog qbvy ntlw'
-DEFAULT_FROM_EMAIL = 'mominulshourav21@gmail.com'
+
+
+
+# Email Configuration
+EMAIL_BACKEND = env('EMAIL_BACKEND')
+EMAIL_HOST = env('EMAIL_HOST')
+EMAIL_HOST_USER = env('EMAIL_HOST_USER')
+EMAIL_HOST_PASSWORD = env('EMAIL_HOST_PASSWORD')
+EMAIL_PORT = env.int('EMAIL_PORT')
+# EMAIL_USE_SSL = env('EMAIL_USE_SSL')
+EMAIL_USE_TLS = env.bool('EMAIL_USE_TLS')
+DEFAULT_FROM_EMAIL = env('DEFAULT_FROM_EMAIL')
+
+
+
+ADMIN_EMAIL = env('ADMIN_EMAIL')
+
+
+
+PATHAO_BASE_URL = env('PATHAO_BASE_URL')
+PATHAO_CLIENT_ID = env('PATHAO_CLIENT_ID')
+PATHAO_CLIENT_SECRET = env('PATHAO_CLIENT_SECRET')
+PATHAO_USERNAME = env('PATHAO_USERNAME')
+PATHAO_PASSWORD = env('PATHAO_PASSWORD')
+PATHAO_STORE_ID = env('PATHAO_STORE_ID')
+GRANT_TYPE = 'password'
 
 
 
@@ -257,6 +299,17 @@ UNFOLD = {
                 "icon": "heroicons-outline:clipboard-document-check",
                 "models": [
                     "store.inventorylog",  # 🔑 new logs model
+                ],
+            },
+            {
+                "label": "Parcel",
+                "icon": "heroicons-outline:clipboard-document-check",
+                "models": [
+                    "parcel.shipment",  # 🔑 new logs model
+                    "parcel.shipmentevent",
+                    "parcel.courier",
+                    "parcel.couriercredential",
+
                 ],
             },
             {

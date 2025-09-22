@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Batch Order Results</title>
+</head>
+<body>
+    <h1>Batch Order Creation Results</h1>
+    <table>
+        <tr>
+            <th>Order Number</th>
+            <th>Status</th>
+            <th>Error</th>
+        </tr>
+        {% for result in results %}
+            <tr>
+                <td>{{ result.order_number }}</td>
+                <td>{{ result.status }}</td>
+                <td>{{ result.error|default:"" }}</td>
+            </tr>
+        {% endfor %}
+    </table>
+    <a href="{% url 'batch_create_orders' %}">Back to Batch Orders</a>
+</body>
+</html>

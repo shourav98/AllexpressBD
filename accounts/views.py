@@ -106,14 +106,12 @@ def login(request):
                         else:
                             # Reassign the session-based cart items to the logged-in user
                             # cart_item = cart_items.get(variations__in=pr)
-                            cart_items = cart_items.filter(variations__in=pr)
-                            for cart_item in cart_items:
-                                cart_item.quantity += 1
+                            filtered_cart_items = cart_items.filter(variations__in=pr)
+                            for cart_item in filtered_cart_items:
+                                cart_item.user = user
+                                cart_item.cart = None  # Remove the association with the session-based cart
+                                cart_item.quantity += 1  # Increment quantity here (consistent with if branch)
                                 cart_item.save()
-
-                            cart_item.user = user
-                            cart_item.cart = None  # Remove the association with the session-based cart
-                            cart_item.save()
 
             except Cart.DoesNotExist:
                 pass

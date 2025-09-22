@@ -846,6 +846,82 @@
 </section>
 <!-- ========================= SECTION PRICE RANGE END// ========================= -->
 
+
+
+<!-- ========================= SECTION PRODUCTS ========================= -->
+<section class="section-name padding-y-sm">
+    <div class="container">
+        <header class="section-heading">
+            <h3 class="section-title popular-title">Popular Products</h3>
+        </header>
+
+        <div class="row" id="productsGrid">
+            {% for product in products %}
+            <div class="col-md-3 mb-4 product-item {% if forloop.counter > 8 %}hidden{% endif %}" 
+                 data-price="{{ product.discounted_price_annotated|floatformat:2 }}">
+                <div class="card shadow-sm">
+                    <div class="card-img-wrap" id="productImage{{ product.id }}">
+                        {% if product.category.slug and product.slug %}
+                            <a href="{% url 'product_detail' product.category.slug product.slug %}" 
+                               data-product-id="{{ product.id }}" 
+                               data-product-slug="{{ product.slug }}" 
+                               data-category-slug="{{ product.category.slug }}" 
+                               class="product-link">
+                                <img src="{{ product.images.url|default:'/static/images/placeholder.jpg' }}" 
+                                     class="card-img-top" 
+                                     alt="{{ product.name|default:'Product Image' }}">
+                            </a>
+                            {% if product.discounted_price_annotated != product.price %}
+                                <span class="discount-badge">-{{ product.discount_percentage|default:'50' }}%</span>
+                            {% endif %}
+                        {% else %}
+                            <span class="text-danger">Missing slug data</span>
+                            <img src="{{ product.images.url|default:'/static/images/placeholder.jpg' }}" 
+                                 class="card-img-top" 
+                                 alt="{{ product.name|default:'Product Image' }}">
+                        {% endif %}
+                    </div>
+                    <div class="card-body">
+                        <h5 class="card-title">
+                            {% if product.category.slug and product.slug %}
+                                <a href="{% url 'product_detail' product.category.slug product.slug %}" 
+                                   class="text-dark text-decoration-none">{{ product.name|default:'Unnamed Product' }}</a>
+                            {% else %}
+                                <span class="text-dark">{{ product.name|default:'Unnamed Product' }}</span>
+                            {% endif %}
+                        </h5>
+                        <div class="product-price">
+                            {% if product.discounted_price_annotated != product.price %}
+                                <span class="discounted">TK {{ product.discounted_price_annotated|floatformat:2 }}</span>
+                                <span class="original">TK {{ product.price|floatformat:2 }}</span>
+                            {% else %}
+                                <span class="discounted">TK {{ product.price|floatformat:2 }}</span>
+                            {% endif %}
+                        </div>
+                        {% if product.category.slug and product.slug %}
+                            <a href="{% url 'product_detail' product.category.slug product.slug %}" 
+                               class="btn btn-sm btn-view-details">View Details</a>
+                        {% else %}
+                            <span class="btn btn-sm btn-view-details disabled">View Details</span>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% empty %}
+                <p>No products available.</p>
+            {% endfor %}
+        </div>
+
+        <div class="show-more-container">
+            <div class="products-counter">
+                <span id="currentCount">8</span> of <span id="totalCount">{{ products|length }}</span>
+            </div>
+            <button class="show-more-btn" id="showMoreBtn" data-count="{{ products|length }}">Show More Products</button>
+        </div>
+    </div>
+</section>
+<!-- ========================= SECTION PRODUCTS END// ========================= -->
+
 <!-- ========================= SECTION CATEGORIES ========================= -->
 <section class="category-section">
     <div class="container">
@@ -879,6 +955,71 @@
     </div>
 </section>
 <!-- ========================= SECTION CATEGORIES END// ========================= -->
+
+<!-- ========================= SECTION BEST SELLERS ========================= -->
+<section class="section-name padding-y-sm">
+<div class="container">
+    <header class="section-heading">
+        <h3 class="section-title popular-title">Best Seller Products</h3>
+    </header>
+
+    <div class="row" id="bestSellersGrid">
+        {% for product in best_sellers %}
+        <div class="col-md-3 mb-4 product-item {% if forloop.counter > 6 %}hidden{% endif %}" data-price="{{ product.discounted_price_annotated|floatformat:2 }}">
+            <div class="card shadow-sm">
+                <div class="card-img-wrap" id="bestSeller{{ product.id }}">
+                    {% if product.category.slug and product.slug %}
+                        <a href="{% url 'product_detail' product.category.slug product.slug %}" data-product-id="{{ product.id }}" data-product-slug="{{ product.slug }}" data-category-slug="{{ product.category.slug }}" class="product-link">
+                            <img src="{{ product.images.url|default:'/static/images/placeholder.jpg' }}" class="card-img-top" alt="{{ product.name|default:'Product Image' }}">
+                        </a>
+                        {% if product.discounted_price_annotated != product.price %}
+                            <span class="discount-badge">-{{ product.discount_percentage|default:'50' }}%</span>
+                        {% endif %}
+                        <span class="badge-best-seller">Best Seller</span>
+                    {% else %}
+                        <span class="text-danger">Missing slug data</span>
+                        <img src="{{ product.images.url|default:'/static/images/placeholder.jpg' }}" class="card-img-top" alt="{{ product.name|default:'Product Image' }}">
+                    {% endif %}
+                </div>
+                <div class="card-body">
+                    <h5 class="card-title">
+                        {% if product.category.slug and product.slug %}
+                            <a href="{% url 'product_detail' product.category.slug product.slug %}" class="text-dark text-decoration-none">{{ product.name|default:'Unnamed Product' }}</a>
+                        {% else %}
+                            <span class="text-dark">{{ product.name|default:'Unnamed Product' }}</span>
+                        {% endif %}
+                    </h5>
+                    <div class="product-price">
+                        {% if product.discounted_price_annotated != product.price %}
+                            <span class="discounted">TK {{ product.discounted_price_annotated|floatformat:2 }}</span>
+                            <span class="original">TK {{ product.price|floatformat:2 }}</span>
+                        {% else %}
+                            <span class="discounted">TK {{ product.price|floatformat:2 }}</span>
+                        {% endif %}
+                    </div>
+                    {% if product.category.slug and product.slug %}
+                        <a href="{% url 'product_detail' product.category.slug product.slug %}" class="btn btn-sm btn-view-details">View Details</a>
+                    {% else %}
+                        <span class="btn btn-sm btn-view-details disabled">View Details</span>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <p>No best seller products available at the moment.</p>
+        {% endfor %}
+    </div>
+
+    <div class="show-more-container">
+        <div class="products-counter">
+            <span id="bestSellersCurrentCount">6</span> of <span id="bestSellersTotalCount">0</span>
+        </div>
+        <button class="show-more-btn" id="showMoreBestSellersBtn" data-count="0">Show More Products</button>
+    </div>
+</div>
+</section>
+<!-- ========================= SECTION BEST SELLERS END// ========================= -->
+
 
 <!-- ========================= SECTION BRANDS ========================= -->
 <section class="category-section">
@@ -921,133 +1062,6 @@
     </div>
 </section>
 <!-- ========================= SECTION SOCIAL MEDIA END// ========================= -->
-
-<!-- ========================= SECTION PRODUCTS ========================= -->
-<section class="section-name padding-y-sm">
-<div class="container">
-    <header class="section-heading">
-        <h3 class="section-title popular-title">Popular Products</h3>
-    </header>
-
-    <div class="row" id="productsGrid">
-        {% for product in products %}
-        <div class="col-md-3 mb-4 product-item {% if forloop.counter > 8 %}hidden{% endif %}" data-price="{{ product.discounted_price|floatformat:2 }}">
-            <div class="card shadow-sm">
-                <div class="card-img-wrap" id="productImage{{ product.id }}">
-                    {% if product.category.slug and product.slug %}
-                        <a href="{% url 'product_detail' product.category.slug product.slug %}" data-product-id="{{ product.id }}" data-product-slug="{{ product.slug }}" data-category-slug="{{ product.category.slug }}" class="product-link">
-                            <img src="{{ product.images.url|default:'/static/images/placeholder.jpg' }}" class="card-img-top" alt="{{ product.name|default:'Product Image' }}">
-                        </a>
-                        {% if product.discounted_price != product.price %}
-                            <span class="discount-badge">-{{ product.discount_percentage|default:'50' }}%</span>
-                        {% endif %}
-                    {% else %}
-                        <span class="text-danger">Missing slug data</span>
-                        <img src="{{ product.images.url|default:'/static/images/placeholder.jpg' }}" class="card-img-top" alt="{{ product.name|default:'Product Image' }}">
-                    {% endif %}
-                </div>
-                <div class="card-body">
-                    <h5 class="card-title">
-                        {% if product.category.slug and product.slug %}
-                            <a href="{% url 'product_detail' product.category.slug product.slug %}" class="text-dark text-decoration-none">{{ product.name|default:'Unnamed Product' }}</a>
-                        {% else %}
-                            <span class="text-dark">{{ product.name|default:'Unnamed Product' }}</span>
-                        {% endif %}
-                    </h5>
-                    <div class="product-price">
-                        {% if product.discounted_price != product.price %}
-                            <span class="discounted">TK {{ product.discounted_price|floatformat:2 }}</span>
-                            <span class="original">TK {{ product.price|floatformat:2 }}</span>
-                        {% else %}
-                            <span class="discounted">TK {{ product.price|floatformat:2 }}</span>
-                        {% endif %}
-                    </div>
-                    {% if product.category.slug and product.slug %}
-                        <a href="{% url 'product_detail' product.category.slug product.slug %}" class="btn btn-sm btn-view-details">View Details</a>
-                    {% else %}
-                        <span class="btn btn-sm btn-view-details disabled">View Details</span>
-                    {% endif %}
-                </div>
-            </div>
-        </div>
-        {% empty %}
-        <p>No products available.</p>
-        {% endfor %}
-    </div>
-
-    <div class="show-more-container">
-        <div class="products-counter">
-            <span id="currentCount">8</span> of <span id="totalCount">0</span>
-        </div>
-        <button class="show-more-btn" id="showMoreBtn" data-count="0">Show More Products</button>
-    </div>
-</div>
-</section>
-<!-- ========================= SECTION PRODUCTS END// ========================= -->
-
-<!-- ========================= SECTION BEST SELLERS ========================= -->
-<section class="section-name padding-y-sm">
-<div class="container">
-    <header class="section-heading">
-        <h3 class="section-title popular-title">Best Seller Products</h3>
-    </header>
-
-    <div class="row" id="bestSellersGrid">
-        {% for product in best_sellers %}
-        <div class="col-md-3 mb-4 product-item {% if forloop.counter > 6 %}hidden{% endif %}" data-price="{{ product.discounted_price|floatformat:2 }}">
-            <div class="card shadow-sm">
-                <div class="card-img-wrap" id="bestSeller{{ product.id }}">
-                    {% if product.category.slug and product.slug %}
-                        <a href="{% url 'product_detail' product.category.slug product.slug %}" data-product-id="{{ product.id }}" data-product-slug="{{ product.slug }}" data-category-slug="{{ product.category.slug }}" class="product-link">
-                            <img src="{{ product.images.url|default:'/static/images/placeholder.jpg' }}" class="card-img-top" alt="{{ product.name|default:'Product Image' }}">
-                        </a>
-                        {% if product.discounted_price != product.price %}
-                            <span class="discount-badge">-{{ product.discount_percentage|default:'50' }}%</span>
-                        {% endif %}
-                        <span class="badge-best-seller">Best Seller</span>
-                    {% else %}
-                        <span class="text-danger">Missing slug data</span>
-                        <img src="{{ product.images.url|default:'/static/images/placeholder.jpg' }}" class="card-img-top" alt="{{ product.name|default:'Product Image' }}">
-                    {% endif %}
-                </div>
-                <div class="card-body">
-                    <h5 class="card-title">
-                        {% if product.category.slug and product.slug %}
-                            <a href="{% url 'product_detail' product.category.slug product.slug %}" class="text-dark text-decoration-none">{{ product.name|default:'Unnamed Product' }}</a>
-                        {% else %}
-                            <span class="text-dark">{{ product.name|default:'Unnamed Product' }}</span>
-                        {% endif %}
-                    </h5>
-                    <div class="product-price">
-                        {% if product.discounted_price != product.price %}
-                            <span class="discounted">TK {{ product.discounted_price|floatformat:2 }}</span>
-                            <span class="original">TK {{ product.price|floatformat:2 }}</span>
-                        {% else %}
-                            <span class="discounted">TK {{ product.price|floatformat:2 }}</span>
-                        {% endif %}
-                    </div>
-                    {% if product.category.slug and product.slug %}
-                        <a href="{% url 'product_detail' product.category.slug product.slug %}" class="btn btn-sm btn-view-details">View Details</a>
-                    {% else %}
-                        <span class="btn btn-sm btn-view-details disabled">View Details</span>
-                    {% endif %}
-                </div>
-            </div>
-        </div>
-        {% empty %}
-        <p>No best seller products available at the moment.</p>
-        {% endfor %}
-    </div>
-
-    <div class="show-more-container">
-        <div class="products-counter">
-            <span id="bestSellersCurrentCount">6</span> of <span id="bestSellersTotalCount">0</span>
-        </div>
-        <button class="show-more-btn" id="showMoreBestSellersBtn" data-count="0">Show More Products</button>
-    </div>
-</div>
-</section>
-<!-- ========================= SECTION BEST SELLERS END// ========================= -->
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
