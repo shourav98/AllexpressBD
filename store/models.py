@@ -125,18 +125,38 @@ variation_category_choice=(
 #         return self.variation_value
     
 class Variation(models.Model):
-    product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name="variations")
-    # product = models.ForeignKey(Product, on_delete=models.CASCADE)
     variation_category = models.CharField(max_length=100, choices=variation_category_choice)
     variation_value = models.CharField(max_length=100)
-    stock = models.PositiveIntegerField(default=0)  # 🔑 track inventory per variation
     is_active = models.BooleanField(default=True)
     created_date = models.DateTimeField(auto_now=True)
 
     objects = VariationManager()
 
+    class Meta:
+        unique_together = ('variation_category', 'variation_value')
+
     def __str__(self):
-        return f"{self.product.name} - {self.variation_value}"
+        return f"{self.variation_value}"
+
+
+class VariationCombination(models.Model):
+    product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='variation_combinations')
+    size_variation = models.ForeignKey(Variation, on_delete=models.CASCADE, null=True, blank=True, related_name='size_combinations', limit_choices_to={'variation_category': 'size'})
+    color_variation = models.ForeignKey(Variation, on_delete=models.CASCADE, null=True, blank=True, related_name='color_combinations', limit_choices_to={'variation_category': 'color'})
+    stock = models.PositiveIntegerField(default=0)
+    is_active = models.BooleanField(default=True)
+    created_date = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('product', 'size_variation', 'color_variation')
+
+    def __str__(self):
+        parts = []
+        if self.size_variation:
+            parts.append(self.size_variation.variation_value)
+        if self.color_variation:
+            parts.append(self.color_variation.variation_value)
+        return f"{self.product.name} - {'-'.join(parts)}"
     
 
 
@@ -173,7 +193,7 @@ class ProductGallery(models.Model):
 
 class InventoryLog(models.Model):
     product = models.ForeignKey(Product, on_delete=models.CASCADE)
-    variation = models.ForeignKey(Variation, on_delete=models.CASCADE, null=True, blank=True)
+    variation_combination = models.ForeignKey(VariationCombination, on_delete=models.CASCADE, null=True, blank=True)
     change = models.IntegerField()  # +10 restock, -2 sold
     reason = models.CharField(
         max_length=50,

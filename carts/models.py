@@ -1,5 +1,5 @@
 from django.db import models
-from store.models import Product, Variation
+from store.models import Product, Variation, VariationCombination
 from accounts.models import Account
 
 
@@ -16,7 +16,7 @@ class Cart(models.Model):
 class CartItem(models.Model):
     user = models.ForeignKey(Account, on_delete = models.CASCADE, null = True)
     product = models.ForeignKey(Product, on_delete=models.CASCADE)
-    variations = models.ManyToManyField(Variation, blank=True)
+    variation_combination = models.ForeignKey(VariationCombination, on_delete=models.CASCADE, null=True, blank=True)
     cart = models.ForeignKey(Cart, on_delete=models.CASCADE, null = True)
     quantity = models.IntegerField()
     is_active = models.BooleanField(default=True)
@@ -31,10 +31,9 @@ class CartItem(models.Model):
 
     def clean(self):
         # Check if enough stock exists
-        if self.variations.exists():
-            for variation in self.variations.all():
-                if self.quantity > variation.stock:
-                    raise ValidationError(f"Not enough stock for {variation.variation_value}")
+        if self.variation_combination:
+            if self.quantity > self.variation_combination.stock:
+                raise ValidationError(f"Not enough stock for {self.variation_combination}")
         else:
             if self.quantity > self.product.stock:
                 raise ValidationError("Not enough stock available")

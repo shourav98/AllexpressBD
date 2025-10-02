@@ -1,5 +1,5 @@
 from django import forms
-from .models import ReviewRating, Product, Variation
+from .models import ReviewRating, Product, Variation, VariationCombination
 
 
 class ReviewForm(forms.ModelForm):
@@ -20,4 +20,10 @@ class ProductForm(forms.ModelForm):
 class VariationForm(forms.ModelForm):
     class Meta:
         model = Variation
-        fields = ["variation_category", "variation_value", "stock", "is_active"]
+        fields = ["variation_category", "variation_value", "is_active"]
+
+
+class VariationCombinationForm(forms.ModelForm):
+    class Meta:
+        model = VariationCombination
+        fields = ["size_variation", "color_variation", "stock", "is_active"]

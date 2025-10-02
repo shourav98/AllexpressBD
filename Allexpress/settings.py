@@ -31,7 +31,7 @@ CSRF_TRUSTED_ORIGINS = env.list('CSRF_TRUSTED_ORIGINS')
 
 
 # Add BASE_URL (replace with your ngrok URL or production URL)
-BASE_URL = env('BASE_URL', default='https://47aa47631504.ngrok-free.app')
+BASE_URL = env('BASE_URL', default='https://e5baf1625821.ngrok-free.app')
 
 # Application definition
 INSTALLED_APPS = [

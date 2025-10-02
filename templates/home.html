@@ -738,6 +738,18 @@
     .product-item.revealing {
         animation: fadeInScale 0.8s cubic-bezier(0.4, 0, 0.2, 1) forwards;
     }
+
+    .product-price .original {
+        text-decoration: line-through;
+        color: #999;
+        margin-left: 0.5rem;
+    }
+
+    .product-price .discounted {
+        color: #ff4444;
+        font-weight: bold;
+        font-size: 1.1rem;
+    }
 </style>
 
 <!-- ========================= SECTION MAIN ========================= -->
@@ -861,14 +873,27 @@
                  data-price="{{ product.discounted_price_annotated|floatformat:2 }}">
                 <div class="card shadow-sm">
                     <div class="card-img-wrap" id="productImage{{ product.id }}">
-                        {% if product.category.slug and product.slug %}
-                            <a href="{% url 'product_detail' product.category.slug product.slug %}" 
-                               data-product-id="{{ product.id }}" 
-                               data-product-slug="{{ product.slug }}" 
-                               data-category-slug="{{ product.category.slug }}" 
+                        {% if product.category and product.slug %}
+                            <a href="{% url 'product_detail' product.category.slug product.slug %}"
+                               data-product-id="{{ product.id }}"
+                               data-product-slug="{{ product.slug }}"
+                               data-category-slug="{{ product.category.slug }}"
                                class="product-link">
-                                <img src="{{ product.images.url|default:'/static/images/placeholder.jpg' }}" 
-                                     class="card-img-top" 
+                                <img src="{{ product.images.url|default:'/static/images/placeholder.jpg' }}"
+                                     class="card-img-top"
+                                     alt="{{ product.name|default:'Product Image' }}">
+                            </a>
+                            {% if product.discounted_price_annotated != product.price %}
+                                <span class="discount-badge">-{{ product.discount_percentage|default:'50' }}%</span>
+                            {% endif %}
+                        {% elif product.brand and product.slug %}
+                            <a href="{% url 'product_detail_by_brand' product.brand.slug product.slug %}"
+                               data-product-id="{{ product.id }}"
+                               data-product-slug="{{ product.slug }}"
+                               data-brand-slug="{{ product.brand.slug }}"
+                               class="product-link">
+                                <img src="{{ product.images.url|default:'/static/images/placeholder.jpg' }}"
+                                     class="card-img-top"
                                      alt="{{ product.name|default:'Product Image' }}">
                             </a>
                             {% if product.discounted_price_annotated != product.price %}
@@ -876,15 +901,18 @@
                             {% endif %}
                         {% else %}
                             <span class="text-danger">Missing slug data</span>
-                            <img src="{{ product.images.url|default:'/static/images/placeholder.jpg' }}" 
-                                 class="card-img-top" 
+                            <img src="{{ product.images.url|default:'/static/images/placeholder.jpg' }}"
+                                 class="card-img-top"
                                  alt="{{ product.name|default:'Product Image' }}">
                         {% endif %}
                     </div>
                     <div class="card-body">
                         <h5 class="card-title">
-                            {% if product.category.slug and product.slug %}
-                                <a href="{% url 'product_detail' product.category.slug product.slug %}" 
+                            {% if product.category and product.slug %}
+                                <a href="{% url 'product_detail' product.category.slug product.slug %}"
+                                   class="text-dark text-decoration-none">{{ product.name|default:'Unnamed Product' }}</a>
+                            {% elif product.brand and product.slug %}
+                                <a href="{% url 'product_detail_by_brand' product.brand.slug product.slug %}"
                                    class="text-dark text-decoration-none">{{ product.name|default:'Unnamed Product' }}</a>
                             {% else %}
                                 <span class="text-dark">{{ product.name|default:'Unnamed Product' }}</span>
@@ -898,8 +926,11 @@
                                 <span class="discounted">TK {{ product.price|floatformat:2 }}</span>
                             {% endif %}
                         </div>
-                        {% if product.category.slug and product.slug %}
-                            <a href="{% url 'product_detail' product.category.slug product.slug %}" 
+                        {% if product.category and product.slug %}
+                            <a href="{% url 'product_detail' product.category.slug product.slug %}"
+                               class="btn btn-sm btn-view-details">View Details</a>
+                        {% elif product.brand and product.slug %}
+                            <a href="{% url 'product_detail_by_brand' product.brand.slug product.slug %}"
                                class="btn btn-sm btn-view-details">View Details</a>
                         {% else %}
                             <span class="btn btn-sm btn-view-details disabled">View Details</span>
@@ -968,8 +999,16 @@
         <div class="col-md-3 mb-4 product-item {% if forloop.counter > 6 %}hidden{% endif %}" data-price="{{ product.discounted_price_annotated|floatformat:2 }}">
             <div class="card shadow-sm">
                 <div class="card-img-wrap" id="bestSeller{{ product.id }}">
-                    {% if product.category.slug and product.slug %}
+                    {% if product.category and product.slug %}
                         <a href="{% url 'product_detail' product.category.slug product.slug %}" data-product-id="{{ product.id }}" data-product-slug="{{ product.slug }}" data-category-slug="{{ product.category.slug }}" class="product-link">
+                            <img src="{{ product.images.url|default:'/static/images/placeholder.jpg' }}" class="card-img-top" alt="{{ product.name|default:'Product Image' }}">
+                        </a>
+                        {% if product.discounted_price_annotated != product.price %}
+                            <span class="discount-badge">-{{ product.discount_percentage|default:'50' }}%</span>
+                        {% endif %}
+                        <span class="badge-best-seller">Best Seller</span>
+                    {% elif product.brand and product.slug %}
+                        <a href="{% url 'product_detail_by_brand' product.brand.slug product.slug %}" data-product-id="{{ product.id }}" data-product-slug="{{ product.slug }}" data-brand-slug="{{ product.brand.slug }}" class="product-link">
                             <img src="{{ product.images.url|default:'/static/images/placeholder.jpg' }}" class="card-img-top" alt="{{ product.name|default:'Product Image' }}">
                         </a>
                         {% if product.discounted_price_annotated != product.price %}
@@ -983,8 +1022,10 @@
                 </div>
                 <div class="card-body">
                     <h5 class="card-title">
-                        {% if product.category.slug and product.slug %}
+                        {% if product.category and product.slug %}
                             <a href="{% url 'product_detail' product.category.slug product.slug %}" class="text-dark text-decoration-none">{{ product.name|default:'Unnamed Product' }}</a>
+                        {% elif product.brand and product.slug %}
+                            <a href="{% url 'product_detail_by_brand' product.brand.slug product.slug %}" class="text-dark text-decoration-none">{{ product.name|default:'Unnamed Product' }}</a>
                         {% else %}
                             <span class="text-dark">{{ product.name|default:'Unnamed Product' }}</span>
                         {% endif %}
@@ -997,8 +1038,10 @@
                             <span class="discounted">TK {{ product.price|floatformat:2 }}</span>
                         {% endif %}
                     </div>
-                    {% if product.category.slug and product.slug %}
+                    {% if product.category and product.slug %}
                         <a href="{% url 'product_detail' product.category.slug product.slug %}" class="btn btn-sm btn-view-details">View Details</a>
+                    {% elif product.brand and product.slug %}
+                        <a href="{% url 'product_detail_by_brand' product.brand.slug product.slug %}" class="btn btn-sm btn-view-details">View Details</a>
                     {% else %}
                         <span class="btn btn-sm btn-view-details disabled">View Details</span>
                     {% endif %}

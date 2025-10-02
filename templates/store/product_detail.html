@@ -828,11 +828,13 @@
                     <div class="option-group">
                         <div class="option-label">Select Color</div>
                         <div class="color-options">
-                            {% for color in single_product.variation_set.colors %}
-                                <label class="option-item">
-                                    <input type="radio" name="radio_color" value="{{ color.variation_value|lower }}" required>
-                                    <span>{{ color.variation_value|capfirst }}</span>
-                                </label>
+                            {% for combination in single_product.variation_combinations.all %}
+                                {% if combination.color_variation %}
+                                    <label class="option-item">
+                                        <input type="radio" name="radio_color" value="{{ combination.color_variation.variation_value|lower }}" required>
+                                        <span>{{ combination.color_variation.variation_value|capfirst }}</span>
+                                    </label>
+                                {% endif %}
                             {% empty %}
                                 <p>No colors available</p>
                             {% endfor %}
@@ -842,11 +844,13 @@
                     <div class="option-group">
                         <div class="option-label">Select Size</div>
                         <div class="size-options">
-                            {% for size in single_product.variation_set.sizes %}
-                                <label class="option-item">
-                                    <input type="radio" name="radio_size" value="{{ size.variation_value|lower }}" required>
-                                    <span>{{ size.variation_value|upper }}</span>
-                                </label>
+                            {% for combination in single_product.variation_combinations.all %}
+                                {% if combination.size_variation %}
+                                    <label class="option-item">
+                                        <input type="radio" name="radio_size" value="{{ combination.size_variation.variation_value|lower }}" required>
+                                        <span>{{ combination.size_variation.variation_value|upper }}</span>
+                                    </label>
+                                {% endif %}
                             {% empty %}
                                 <p>No sizes available</p>
                             {% endfor %}
@@ -858,21 +862,25 @@
                         <div class="d-flex align-items-center gap-3">
                             <div class="quantity-selector">
                                 <button type="button" class="quantity-btn" onclick="decrementQuantity(this)" data-min="1">-</button>
-                                <input type="number" class="quantity-input" name="quantity" value="1" min="1" max="{{ single_product.stock|default:'100' }}" readonly>
-                                <button type="button" class="quantity-btn plus" onclick="incrementQuantity(this)" data-max="{{ single_product.stock|default:'100' }}">+</button>
+                                <input type="number" class="quantity-input" name="quantity" value="{{ cart_quantity|default:1 }}" min="1" max="100" readonly>
+                                <button type="button" class="quantity-btn plus" onclick="incrementQuantity(this)" data-max="100">+</button>
                             </div>
-                            {% if single_product.stock <= 0 %}
-                                <small class="text-danger">Out of Stock</small>
+                            {% if not single_product.variation_combinations.exists %}
+                                {% if single_product.stock <= 0 %}
+                                    <small class="text-danger">Out of Stock</small>
+                                {% else %}
+                                    <small class="text-success">{{ single_product.stock|default:'100' }} items available</small>
+                                {% endif %}
                             {% else %}
-                                <small class="text-success">{{ single_product.stock|default:'100' }} items available</small>
+                                <small class="text-success">Multiple variations available</small>
                             {% endif %}
                         </div>
                     </div>
 
-                    {% if single_product.stock <= 0 %}
+                    {% if not single_product.variation_combinations.exists and single_product.stock <= 0 %}
                         <button class="add-to-cart" disabled>Out of Stock</button>
                     {% else %}
-                        <button type="submit" class="add-to-cart">
+                        <button type="submit" class="add-to-cart" id="addToCartBtn">
                             <i class="fas fa-shopping-cart me-2"></i>
                             Add to Cart
                         </button>
@@ -1153,7 +1161,13 @@
         <div class="related-grid" id="relatedProductsGrid">
             {% for product in related_products %}
                 <div class="related-item">
-                    <a href="{% url 'product_detail' product.category.slug product.slug %}" data-product-id="{{ product.id }}" data-product-slug="{{ product.slug }}" data-category-slug="{{ product.category.slug }}" class="text-decoration-none">
+                    {% if product.category and product.slug %}
+                        <a href="{% url 'product_detail' product.category.slug product.slug %}" data-product-id="{{ product.id }}" data-product-slug="{{ product.slug }}" data-category-slug="{{ product.category.slug }}" class="text-decoration-none">
+                    {% elif product.brand and product.slug %}
+                        <a href="{% url 'product_detail_by_brand' product.brand.slug product.slug %}" data-product-id="{{ product.id }}" data-product-slug="{{ product.slug }}" data-brand-slug="{{ product.brand.slug }}" class="text-decoration-none">
+                    {% else %}
+                        <div class="text-decoration-none">
+                    {% endif %}
                         <div class="related-image">
                             <img src="{{ product.images.url|default:'/static/images/placeholder.jpg' }}" alt="{{ product.name|default:'Product Image' }}">
                             {% if product.discounted_price_annotated != product.price %}
@@ -1171,7 +1185,11 @@
                                 {% endif %}
                             </div>
                         </div>
-                    </a>
+                    {% if product.category or product.brand %}
+                        </a>
+                    {% else %}
+                        </div>
+                    {% endif %}
                 </div>
             {% empty %}
                 <p>No related products available.</p>
@@ -1181,6 +1199,7 @@
 </div>
 
 <script>
+    const defaultCartQuantity = "{{ cart_quantity|default:1 }}";
     document.addEventListener('DOMContentLoaded', function() {
         const modal = document.getElementById('imageModal');
         const modalImg = document.getElementById('modalImg');
@@ -1296,6 +1315,106 @@
                 document.getElementById(this.getAttribute('data-tab')).classList.add('active');
             });
         });
+
+        // Update quantity based on selected variations
+        function updateQuantityForVariations() {
+            const colorInput = document.querySelector('input[name="radio_color"]:checked');
+            const sizeInput = document.querySelector('input[name="radio_size"]:checked');
+            const colorValue = colorInput ? colorInput.value : '';
+            const sizeValue = sizeInput ? sizeInput.value : '';
+
+            if (colorValue || sizeValue) {
+                fetch(`/store/product/{{ single_product.id }}/get-cart-quantity/?color=${encodeURIComponent(colorValue)}&size=${encodeURIComponent(sizeValue)}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        document.querySelector('.quantity-input').value = data.quantity;
+                        updateButtonStates(document.querySelector('.quantity-input'));
+                    })
+                    .catch(error => console.error('Error fetching cart quantity:', error));
+            } else {
+                // No variations selected, reset to 1 or cart_quantity
+                document.querySelector('.quantity-input').value = defaultCartQuantity;
+                updateButtonStates(document.querySelector('.quantity-input'));
+            }
+        }
+
+        // Add event listeners to variation inputs
+        document.querySelectorAll('input[name="radio_color"], input[name="radio_size"]').forEach(function(input) {
+            input.addEventListener('change', updateQuantityForVariations);
+        });
+
+        // AJAX add to cart
+        const addToCartForm = document.querySelector('form[action*="add_cart"]');
+        if (addToCartForm) {
+            addToCartForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+
+                // Validate form before submitting
+                const colorInputs = document.querySelectorAll('input[name="radio_color"]');
+                const sizeInputs = document.querySelectorAll('input[name="radio_size"]');
+                const hasVariations = colorInputs.length > 0 || sizeInputs.length > 0;
+
+                if (hasVariations) {
+                    const colorSelected = document.querySelector('input[name="radio_color"]:checked');
+                    const sizeSelected = document.querySelector('input[name="radio_size"]:checked');
+
+                    if (!colorSelected || !sizeSelected) {
+                        alert('Please select both color and size before adding to cart.');
+                        return;
+                    }
+                }
+
+                const formData = new FormData(this);
+                // Debug: log form data
+                console.log('DEBUG: Form data being sent:');
+                for (let [key, value] of formData.entries()) {
+                    console.log(`${key}: ${value}`);
+                }
+                const btn = document.getElementById('addToCartBtn');
+                const originalText = btn.innerHTML;
+                btn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Adding...';
+                btn.disabled = true;
+
+                fetch(this.action, {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // Update cart badge
+                        const cartBadges = document.querySelectorAll('.cart-badge');
+                        cartBadges.forEach(badge => {
+                            if (data.cart_count > 0) {
+                                badge.textContent = data.cart_count;
+                                badge.style.display = 'flex';
+                            } else {
+                                badge.style.display = 'none';
+                            }
+                        });
+                        btn.innerHTML = '<i class="fas fa-check me-2"></i>Added!';
+                        setTimeout(() => {
+                            btn.innerHTML = originalText;
+                            btn.disabled = false;
+                        }, 2000);
+                    } else {
+                        alert('Error adding to cart');
+                        btn.innerHTML = originalText;
+                        btn.disabled = false;
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Error adding to cart');
+                    btn.innerHTML = originalText;
+                    btn.disabled = false;
+                });
+            });
+        }
 
         window.changeImage = changeImage;
         window.incrementQuantity = incrementQuantity;

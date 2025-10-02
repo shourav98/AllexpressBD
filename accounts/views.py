@@ -76,42 +76,25 @@ def login(request):
 
                 # If there are session-based cart items, handle merging them with the logged-in user's cart
                 if cart_items.exists():
-                    product_variation = []
-                    for item in cart_items:
-                        variations = item.variations.all()
-                        product_variation.append(list(variations))
+                    for session_item in cart_items:
+                        # Check if user already has this product with same variation in cart
+                        user_item = CartItem.objects.filter(
+                            user=user,
+                            product=session_item.product,
+                            variation_combination=session_item.variation_combination
+                        ).first()
 
-                    # Get the logged-in user's cart items
-                    user_cart_items = CartItem.objects.filter(user=user)
-                    existing_variations_list = []
-                    item_ids = []
-
-                    for item in user_cart_items:
-                        existing_variations = item.variations.all()
-                        # Sort existing variations to ensure consistent order
-                        sorted_existing_variations = sorted(existing_variations, key=lambda v: v.variation_category)
-                        existing_variations_list.append(list(sorted_existing_variations))
-                        item_ids.append(item.id)
-
-                    # Check for variation matches and update quantities or add new items to the user cart
-                    for pr in product_variation:
-                        if pr in existing_variations_list:
-                            index = existing_variations_list.index(pr)
-                            item_id = item_ids[index]
-                            items = CartItem.objects.filter(id=item_id)
-                            for item in items:
-                                item.quantity += 1
-                                item.user = user
-                                item.save()
+                        if user_item:
+                            # Merge quantities
+                            user_item.quantity += session_item.quantity
+                            user_item.save()
+                            # Delete the session item
+                            session_item.delete()
                         else:
-                            # Reassign the session-based cart items to the logged-in user
-                            # cart_item = cart_items.get(variations__in=pr)
-                            filtered_cart_items = cart_items.filter(variations__in=pr)
-                            for cart_item in filtered_cart_items:
-                                cart_item.user = user
-                                cart_item.cart = None  # Remove the association with the session-based cart
-                                cart_item.quantity += 1  # Increment quantity here (consistent with if branch)
-                                cart_item.save()
+                            # Assign session item to user
+                            session_item.user = user
+                            session_item.cart = None
+                            session_item.save()
 
             except Cart.DoesNotExist:
                 pass

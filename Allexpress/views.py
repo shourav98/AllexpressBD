@@ -87,6 +87,7 @@ def products_by_brand(request, brand_slug):
     """Display products filtered by brand."""
     brand = get_object_or_404(Brand, slug=brand_slug)
 
+    from django.db.models import Sum, IntegerField
     base_products = Product.objects.annotate(
         discounted_price_annotated=Case(
             When(
@@ -97,8 +98,15 @@ def products_by_brand(request, brand_slug):
                 )
             ),
             default=F('price')
+        ),
+        total_stock=Case(
+            When(variation_combinations__isnull=False, then=Sum('variation_combinations__stock')),
+            default=F('stock'),
+            output_field=IntegerField()
         )
-    ).filter(is_available=True, brand=brand)
+    ).filter(is_available=True, brand=brand).filter(
+        Q(stock__gt=0) | Q(total_stock__gt=0)
+    ).distinct()
 
     # Apply filters
     size = request.GET.get('size')
@@ -106,7 +114,7 @@ def products_by_brand(request, brand_slug):
     price_max = request.GET.get('price_max', 5000)
 
     if size:
-        base_products = base_products.filter(variation__variation_category='size', variation__variation_value=size)
+        base_products = base_products.filter(variation_combinations__size_variation__variation_value=size)
     
     try:
         price_min = Decimal(price_min)

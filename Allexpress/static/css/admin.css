@@ -1,36 +1,61 @@
-/* Custom admin styles for Unfold integration */
-.bg-card {
-    background-color: #fff;
+/* Dashboard Specific Styles */
+.chart-container {
+    position: relative;
+    height: 400px;
+    width: 100%;
 }
 
-.border-border {
-    border-color: #e5e7eb;
+@media (max-width: 768px) {
+    .chart-container {
+        height: 300px !important;
+    }
+    
+    .grid-cols-4 {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    
+    .text-2xl {
+        font-size: 1.5rem;
+    }
 }
 
-.text-muted-foreground {
-    color: #6b7280;
+/* Hover effects */
+.hover-lift:hover {
+    transform: translateY(-2px);
+    transition: transform 0.2s ease-in-out;
 }
 
-.text-foreground {
-    color: #111827;
+/* Loading states */
+.loading {
+    opacity: 0.6;
+    pointer-events: none;
 }
 
-.hover\:bg-muted\/40:hover {
-    background-color: rgba(249, 250, 251, 0.4);
+/* Custom scrollbar for tables */
+.table-container::-webkit-scrollbar {
+    height: 6px;
 }
 
-.bg-muted\/40 {
-    background-color: rgba(249, 250, 251, 0.4);
+.table-container::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 3px;
 }
 
-.divide-border > :not([hidden]) ~ :not([hidden]) {
-    border-color: #e5e7eb;
+.table-container::-webkit-scrollbar-thumb {
+    background: #c1c1c1;
+    border-radius: 3px;
 }
 
-.shadow-sm {
-    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+.table-container::-webkit-scrollbar-thumb:hover {
+    background: #a8a8a8;
 }
 
-.rounded-xl {
-    border-radius: 0.75rem;
+/* Animation for progress bars */
+@keyframes progressFill {
+    from { width: 0%; }
+    to { width: attr(style); }
+}
+
+.progress-bar {
+    animation: progressFill 1s ease-in-out;
 }

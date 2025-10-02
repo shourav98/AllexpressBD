@@ -4,7 +4,7 @@ from category.models import Category, Brand
 from carts.models import CartItem
 from carts.views import _cart_id
 from django.core.paginator import Paginator
-from django.db.models import Q, Count, F, ExpressionWrapper, DecimalField
+from django.db.models import Q, Count, F, ExpressionWrapper, DecimalField, Case, When, IntegerField, Value, Sum
 from django.db.models.functions import Coalesce
 from .forms import ReviewForm
 from django.contrib import messages
@@ -14,14 +14,24 @@ from decimal import Decimal
 
 
 from django.http import JsonResponse
-from .models import Variation
+from .models import Variation, VariationCombination
 from .forms import ProductForm, VariationForm
+from carts.models import Cart
 
 def store(request, category_slug=None, brand_slug=None):
     """Store page with products, categories, subcategories, brands, filters, and search."""
     category = None
     brand = None
-    products = Product.objects.filter(is_available=True)
+    # Include products that have stock either at product level or in combinations
+    products = Product.objects.filter(is_available=True).annotate(
+        total_stock=Case(
+            When(variation_combinations__isnull=False, then=Sum('variation_combinations__stock')),
+            default=F('stock'),
+            output_field=IntegerField()
+        )
+    ).filter(
+        Q(stock__gt=0) | Q(total_stock__gt=0)
+    ).distinct()
     categories = None
 
     # Filter by category
@@ -44,8 +54,7 @@ def store(request, category_slug=None, brand_slug=None):
     size = request.GET.get('size')
     if size:
         products = products.filter(
-            variations__variation_category='size',
-            variations__variation_value=size
+            variation_combinations__size_variation__variation_value=size
         )
 
     # Apply price filter
@@ -257,7 +266,15 @@ def submit_review(request, product_id):
 def products_by_brand(request, brand_slug):
     """Display products filtered by brand."""
     brand = get_object_or_404(Brand, slug=brand_slug)
-    products = Product.objects.filter(brand=brand, is_available=True)
+    products = Product.objects.filter(brand=brand, is_available=True).annotate(
+        total_stock=Case(
+            When(variation_combinations__isnull=False, then=Sum('variation_combinations__stock')),
+            default=F('stock'),
+            output_field=IntegerField()
+        )
+    ).filter(
+        Q(stock__gt=0) | Q(total_stock__gt=0)
+    ).distinct()
 
     # Apply filters
     size = request.GET.get('size')
@@ -265,7 +282,7 @@ def products_by_brand(request, brand_slug):
     price_max = request.GET.get('price_max', 5000)
 
     if size:
-        products = products.filter(variations__variation_category='size', variations__variation_value=size)
+        products = products.filter(variation_combinations__size_variation__variation_value=size)
     
     try:
         price_min = Decimal(price_min)
@@ -379,9 +396,29 @@ def product_detail(request, category_slug=None, product_slug=None, brand_slug=No
         else:
             raise Product.DoesNotExist
 
-        in_cart = CartItem.objects.filter(
-            cart__cart_id=_cart_id(request), product=single_product
-        ).exists()
+        # Always set cart_quantity to 1 for the quantity selector
+        cart_quantity = 1
+
+        # Check if product is in cart for display purposes
+        if not single_product.variation_combinations.exists():
+            try:
+                if request.user.is_authenticated:
+                    in_cart = CartItem.objects.filter(user=request.user, product=single_product, variation_combination__isnull=True, is_active=True).exists()
+                else:
+                    cart = Cart.objects.get(cart_id=_cart_id(request))
+                    in_cart = CartItem.objects.filter(cart=cart, product=single_product, variation_combination__isnull=True, is_active=True).exists()
+            except Cart.DoesNotExist:
+                in_cart = False
+        else:
+            # For products with variations, check if any cart item exists
+            try:
+                if request.user.is_authenticated:
+                    in_cart = CartItem.objects.filter(user=request.user, product=single_product, is_active=True).exists()
+                else:
+                    cart = Cart.objects.get(cart_id=_cart_id(request))
+                    in_cart = CartItem.objects.filter(cart=cart, product=single_product, is_active=True).exists()
+            except Cart.DoesNotExist:
+                in_cart = False
 
         # Track recently viewed
         recently_viewed = request.session.get("recently_viewed", [])
@@ -422,6 +459,7 @@ def product_detail(request, category_slug=None, product_slug=None, brand_slug=No
     context = {
         "single_product": single_product,
         "in_cart": in_cart,
+        "cart_quantity": cart_quantity,
         "related_products": related_products,
         "orderproduct": orderproduct,
         "reviews": reviews,
@@ -460,7 +498,14 @@ def add_variation_ajax(request, product_id):
                 "id": variation.id,
                 "category": variation.variation_category,
                 "value": variation.variation_value,
-                "stock": variation.stock,
             })
         return JsonResponse({"success": False, "errors": form.errors})
     return JsonResponse({"success": False})
+
+
+def get_cart_quantity_ajax(request, product_id):
+    """AJAX endpoint to get cart quantity for selected variations - always returns 1"""
+    if request.method == "GET":
+        # Always return 1 for the quantity selector
+        return JsonResponse({"quantity": 1})
+    return JsonResponse({"error": "Invalid request"}, status=400)

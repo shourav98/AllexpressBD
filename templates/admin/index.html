@@ -4,14 +4,10 @@
 {% block content %}
 
 <head>
-    <!-- Required meta tags -->
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-
-    <!--Chartjs CDN-->
     <script src="https://cdn.jsdelivr.net/npm/chart.js@2.9.4/dist/Chart.min.js"></script>
-
-    <!--Custome CSS-->
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
     <link rel="stylesheet" href="{% static 'css/style.css' %}">
 </head>
 
@@ -22,10 +18,46 @@
         <p class="text-gray-600">{% trans "Overview of your store performance" %}</p>
     </div>
 
+    <!-- Quick Actions -->
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+        <a href="{% url 'admin:store_product_add' %}" class="bg-blue-50 border border-blue-200 p-4 rounded-lg text-center hover:bg-blue-100 transition-colors">
+            {% component "unfold/components/icon.html" with icon="heroicons-outline:plus" class="h-6 w-6 mx-auto text-blue-600" %}{% endcomponent %}
+            <span class="block mt-2 text-sm font-medium text-blue-700">{% trans "Add Product" %}</span>
+        </a>
+        <a href="{% url 'admin:orders_order_changelist' %}?status__exact=New" class="bg-green-50 border border-green-200 p-4 rounded-lg text-center hover:bg-green-100 transition-colors">
+            {% component "unfold/components/icon.html" with icon="heroicons-outline:shopping-cart" class="h-6 w-6 mx-auto text-green-600" %}{% endcomponent %}
+            <span class="block mt-2 text-sm font-medium text-green-700">{% trans "Process Orders" %}</span>
+        </a>
+        <a href="{% url 'admin:store_product_changelist' %}?stock__lt=10" class="bg-red-50 border border-red-200 p-4 rounded-lg text-center hover:bg-red-100 transition-colors">
+            {% component "unfold/components/icon.html" with icon="heroicons-outline:exclamation" class="h-6 w-6 mx-auto text-red-600" %}{% endcomponent %}
+            <span class="block mt-2 text-sm font-medium text-red-700">{% trans "Low Stock" %}</span>
+        </a>
+
+    </div>
+
+    <!-- Period Filter and Export -->
+    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+        <div class="flex items-center gap-4">
+            <form method="get" class="flex items-center gap-2">
+                <label for="period" class="text-sm font-medium text-gray-700">{% trans "Period" %}:</label>
+                <select name="period" id="period" onchange="this.form.submit()" class="px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500">
+                    <option value="7" {% if selected_period == '7' %}selected{% endif %}>{% trans "Last 7 days" %}</option>
+                    <option value="30" {% if selected_period == '30' %}selected{% endif %}>{% trans "Last 30 days" %}</option>
+                    <option value="90" {% if selected_period == '90' %}selected{% endif %}>{% trans "Last 90 days" %}</option>
+                    <option value="365" {% if selected_period == '365' %}selected{% endif %}>{% trans "Last 365 days" %}</option>
+                </select>
+            </form>
+            <button onclick="refreshDashboard()" class="px-3 py-2 bg-gray-100 text-gray-700 rounded-md text-sm hover:bg-gray-200 flex items-center gap-2">
+                {% component "unfold/components/icon.html" with icon="heroicons-outline:refresh" class="h-4 w-4" %}{% endcomponent %}
+                {% trans "Refresh" %}
+            </button>
+        </div>
+    </div>
+
     <!-- KPI Cards Grid -->
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         {% for stat in kpi %}
-        <div class="border border-gray-200 rounded-xl shadow-sm p-6">
+        <div class="border border-gray-200 rounded-xl shadow-sm p-6 hover:shadow-md transition-shadow">
             <div class="flex items-center justify-between mb-4">
                 <div class="text-sm font-medium text-gray-600">{{ stat.title }}</div>
                 <div class="text-gray-400">
@@ -51,25 +83,40 @@
         {% endfor %}
     </div>
 
-   
+    <!-- Charts Section -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mt-8">
+        <!-- Sales Trend Chart -->
+        <div class="border border-gray-200 rounded-xl shadow-sm p-6">
+            <h3 class="text-lg font-semibold text-gray-900 mb-4">{% trans "Sales Trend" %}</h3>
+            <div class="chart-container" style="position: relative; height:300px; width:100%">
+                <canvas id="salesChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Payment Methods Chart -->
+        <div class="border border-gray-200 rounded-xl shadow-sm p-6">
+            <h3 class="text-lg font-semibold text-gray-900 mb-4">{% trans "Payment Methods" %}</h3>
+            <div class="chart-container" style="position: relative; height:300px; width:100%">
+                <canvas id="paymentChart"></canvas>
+            </div>
+        </div>
+    </div>
 
     <!-- Additional Charts Section -->
-    <div class="w-full mt-8">
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-            <!-- Pie Chart -->
-            <div class="border border-gray-200 rounded-xl shadow-sm p-6">
-                <h3 class="text-lg font-semibold text-gray-900 mb-4">{% trans "Product Distribution" %}</h3>
-                <div class="chart-container" style="position: relative; height:400px; width:100%">
-                    <canvas id="myChart1"></canvas>
-                </div>
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mt-8">
+        <!-- Product Distribution -->
+        <div class="border border-gray-200 rounded-xl shadow-sm p-6">
+            <h3 class="text-lg font-semibold text-gray-900 mb-4">{% trans "Product Distribution" %}</h3>
+            <div class="chart-container" style="position: relative; height:400px; width:100%">
+                <canvas id="productChart"></canvas>
             </div>
+        </div>
 
-            <!-- Bar Chart -->
-            <div class="border border-gray-200 rounded-xl shadow-sm p-6">
-                <h3 class="text-lg font-semibold text-gray-900 mb-4">{% trans "Inventory Overview" %}</h3>
-                <div class="chart-container" style="position: relative; height:400px; width:100%">
-                    <canvas id="myChart"></canvas>
-                </div>
+        <!-- Inventory Overview -->
+        <div class="border border-gray-200 rounded-xl shadow-sm p-6">
+            <h3 class="text-lg font-semibold text-gray-900 mb-4">{% trans "Inventory Overview" %}</h3>
+            <div class="chart-container" style="position: relative; height:400px; width:100%">
+                <canvas id="inventoryChart"></canvas>
             </div>
         </div>
     </div>
@@ -80,14 +127,15 @@
         <div class="lg:col-span-2 border border-gray-200 rounded-xl shadow-sm p-6">
             <div class="flex items-center justify-between mb-4">
                 <h3 class="text-lg font-semibold text-gray-900">{% trans "Recent Orders" %}</h3>
-                <a href="{% url 'admin:orders_order_changelist' %}" class="text-sm font-medium text-primary-600 hover:text-primary-700">
+                <a href="{% url 'admin:orders_order_changelist' %}" class="text-sm font-medium text-primary-600 hover:text-primary-700 flex items-center gap-1">
                     {% trans "View all" %}
+                    {% component "unfold/components/icon.html" with icon="heroicons-outline:arrow-right" class="h-4 w-4" %}{% endcomponent %}
                 </a>
             </div>
             
             <div class="overflow-x-auto">
                 <table class="w-full text-sm">
-                    <thead class=" text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <thead class="text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                         <tr>
                             <th class="px-4 py-3">{% trans "Order #" %}</th>
                             <th class="px-4 py-3">{% trans "Customer" %}</th>
@@ -99,12 +147,16 @@
                     <tbody class="divide-y divide-gray-200">
                         {% for row in table_data %}
                         <tr class="hover:bg-gray-50">
-                            <td class="px-4 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{ row.cells.0 }}</td>
+                            <td class="px-4 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                                <a href="{% url 'admin:orders_order_change' row.id %}" class="text-primary-600 hover:text-primary-700">
+                                    {{ row.cells.0 }}
+                                </a>
+                            </td>
                             <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-500">{{ row.cells.1 }}</td>
                             <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900 text-right">{{ row.cells.2 }}</td>
                             <td class="px-4 py-4 whitespace-nowrap">
                                 {% if row.cells.3 == 'Completed' %}
-                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-brown-900">
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
                                     {{ row.cells.3 }}
                                 </span>
                                 {% elif row.cells.3 == 'Pending' %}
@@ -125,7 +177,7 @@
                         </tr>
                         {% empty %}
                         <tr>
-                            <td colspan="5" class="px-4 py-4 text-sm text-gray-500 text-center font-medium whitespace-nowrap color text-red-500">{% trans "No orders found" %}</td>
+                            <td colspan="5" class="px-4 py-4 text-sm text-gray-500 text-center">{% trans "No orders found" %}</td>
                         </tr>
                         {% endfor %}
                     </tbody>
@@ -146,7 +198,7 @@
                             <span class="text-sm font-medium text-gray-900">{{ item.value }}%</span>
                         </div>
                         <div class="w-full bg-gray-200 rounded-full h-2">
-                            <div class="bg-primary-600 h-2 rounded-full" style="width: '{{ item.value }}%';"></div>
+                            <div class="bg-primary-600 h-2 rounded-full transition-all duration-300" style="width: {{ item.value }}%;"></div>
                         </div>
                         <p class="text-xs text-gray-500 mt-1">{{ item.description }}</p>
                     </div>
@@ -156,152 +208,172 @@
 
             <!-- Low Stock Alerts -->
             {% if low_stock_products or low_stock_variations %}
-            <div class="border border-red-200 rounded-xl shadow-sm p-6">
+            <div class="border border-red-200 bg-red-50 rounded-xl shadow-sm p-6">
                 <h3 class="text-lg font-semibold text-red-800 mb-4 flex items-center">
                     {% component "unfold/components/icon.html" with icon="heroicons-outline:exclamation-triangle" class="h-5 w-5 mr-2" %}{% endcomponent %}
                     {% trans "Low Stock Alerts" %}
                 </h3>
                 <div class="space-y-3">
                     {% for product in low_stock_products %}
-                    <div class="flex justify-between items-center">
+                    <div class="flex justify-between items-center p-2 bg-white rounded">
                         <span class="text-sm text-gray-700 truncate">{{ product.name }}</span>
                         <span class="text-sm font-medium text-red-600 whitespace-nowrap">{{ product.stock }} left</span>
                     </div>
                     {% endfor %}
                     {% for variation in low_stock_variations %}
-                    <div class="flex justify-between items-center">
-                        <span class="text-sm text-gray-700 truncate">{{ variation.product.name }} - {{ variation.variation_value }}</span>
+                    <div class="flex justify-between items-center p-2 bg-white rounded">
+                        <span class="text-sm text-gray-700 truncate">{{ variation }}</span>
                         <span class="text-sm font-medium text-red-600 whitespace-nowrap">{{ variation.stock }} left</span>
                     </div>
                     {% endfor %}
                 </div>
             </div>
             {% endif %}
+
+            <!-- Recent Customers -->
+            <div class="border border-gray-200 rounded-xl shadow-sm p-6">
+                <h3 class="text-lg font-semibold text-gray-900 mb-4">{% trans "Recent Customers" %}</h3>
+                <div class="space-y-3">
+                    {% for customer in customer_data %}
+                    <div class="flex items-center justify-between p-2 hover:bg-gray-50 rounded">
+                        <div>
+                            <div class="text-sm font-medium text-gray-900">{{ customer.name|default:"Unknown" }}</div>
+                            <div class="text-xs text-gray-500">{{ customer.email }}</div>
+                        </div>
+                        <div class="text-xs text-gray-400">{{ customer.joined }}</div>
+                    </div>
+                    {% empty %}
+                    <div class="text-sm text-gray-500 text-center">{% trans "No recent customers" %}</div>
+                    {% endfor %}
+                </div>
+            </div>
         </div>
-        
     </div>
 </div>
 
 <script>
-    // Initialize charts after page load
-    document.addEventListener('DOMContentLoaded', function() {
-    // Predefined color palette
-    const colorPalette = [
-        'rgba(255, 99, 132, 1)',   // Red
-        'rgba(255, 102, 204, 1)',  // Magenta
-        'rgba(255, 206, 86, 1)',   // Yellow
-        'rgba(102, 255, 102, 1)',  // Lime Green
-        'rgba(75, 192, 192, 1)',   // Teal
-        'rgba(153, 102, 255, 1)',  // Purple
-        'rgba(255, 159, 64, 1)',   // Orange
-        'rgba(255, 69, 255, 1)',   // Pink
-        'rgba(54, 235, 162, 1)',   // Green
-        'rgba(184, 106, 86, 1)',   // Brown
-        'rgba(102, 255, 153, 1)',  // Light Green
-        'rgba(86, 184, 255, 1)',   // Light Blue
-        'rgba(192, 75, 192, 1)',   // Violet
-        'rgba(255, 153, 102, 1)',  // Coral
-        'rgba(102, 204, 255, 1)',   // Sky Blue
-        'rgba(255, 255, 102, 1)',  // Light Yellow
-        'rgba(102, 255, 255, 1)',  // Aqua
-        'rgba(255, 153, 255, 1)',  // Lavender
-        'rgba(153, 102, 204, 1)',  // Plum
-        'rgba(255, 102, 102, 1)',  // Crimson
-        'rgba(102, 102, 255, 1)',  // Royal Blue
+// Color palette for consistent coloring
+const colorPalette = [
+    '#3B82F6', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6',
+    '#06B6D4', '#84CC16', '#F97316', '#EC4899', '#64748B',
+    '#6366F1', '#14B8A6', '#FBBF24', '#DC2626', '#A855F7',
+    '#0EA5E9', '#22C55E', '#EAB308', '#B91C1C', '#7E22CE'
+];
 
-    ];
+// Initialize all charts
+document.addEventListener('DOMContentLoaded', function() {
+    initializeCharts();
+});
 
-    // Function to map product name to a consistent color
-    function getFixedColor(productName) {
-        // Simple hash function to get consistent index based on product name
-        let hash = 0;
-        for (let i = 0; i < productName.length; i++) {
-            hash = productName.charCodeAt(i) + ((hash << 5) - hash);
-        }
-        // Use modulo to map hash to an index in the color palette
-        const index = Math.abs(hash) % colorPalette.length;
-        return colorPalette[index];
-    }
-
-    // Create a color map for products to ensure consistency across charts
-    const colorMap = {};
-
-    // Pie Chart
-    var ctx1 = document.getElementById('myChart1').getContext('2d');
-    var labels = [];
-    var data = [];
-    {% for op in ordered_products %}
-        labels.push('{{ op.product__name }}');
-        data.push('{{ op.total_quantity }}');
-        // Assign color to product if not already assigned
-        if (!colorMap['{{ op.product__name }}']) {
-            colorMap['{{ op.product__name }}'] = getFixedColor('{{ op.product__name }}');
-        }
-    {% endfor %}
-
-    // Generate colors for Pie Chart using colorMap
-    var pieColors = labels.map(label => colorMap[label]);
-
-    var myChart1 = new Chart(ctx1, {
-        type: 'pie',
+function initializeCharts() {
+    // Sales Trend Chart
+    const salesCtx = document.getElementById('salesChart').getContext('2d');
+    new Chart(salesCtx, {
+        type: 'line',
         data: {
-            labels: labels,
+            labels: {{ charts.sales.labels|safe }},
             datasets: [{
-                label: 'Products',
-                data: data,
-                backgroundColor: pieColors,
-                borderColor: pieColors,
-                borderWidth: 1
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            legend: {
-                position: 'right'
-            }
-        }
-    });
-
-    // Bar Chart (Inventory Overview)
-    var invLabels = [];
-    var invData = [];
-    {% for p in inventory %}
-        invLabels.push("{{ p.name }}");
-        invData.push({{ p.stock }});
-        // Assign color to product if not already assigned
-        if (!colorMap["{{ p.name }}"]) {
-            colorMap["{{ p.name }}"] = getFixedColor("{{ p.name }}");
-        }
-    {% endfor %}
-
-    // Generate colors for Bar Chart using colorMap
-    var barColors = invLabels.map(label => colorMap[label]);
-
-    var ctx = document.getElementById('myChart').getContext('2d');
-    var myChart = new Chart(ctx, {
-        type: 'bar',
-        data: {
-            labels: invLabels,
-            datasets: [{
-                label: 'Stock Available',
-                data: invData,
-                backgroundColor: barColors,
-                borderColor: barColors,
-                borderWidth: 1
+                label: '{% trans "Daily Sales" %}',
+                data: {{ charts.sales.datasets.0.data|safe }},
+                borderColor: '#3B82F6',
+                backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                borderWidth: 2,
+                fill: true,
+                tension: 0.4
             }]
         },
         options: {
             responsive: true,
             maintainAspectRatio: false,
             scales: {
-                yAxes: [{
-                    ticks: { beginAtZero: true }
-                }]
+                y: { beginAtZero: true }
             }
         }
     });
+
+    // Payment Methods Chart
+    const paymentCtx = document.getElementById('paymentChart').getContext('2d');
+    new Chart(paymentCtx, {
+        type: 'doughnut',
+        data: {
+            labels: {{ charts.payments.labels|safe }},
+            datasets: [{
+                data: {{ charts.payments.datasets.0.data|safe }},
+                backgroundColor: colorPalette.slice(0, {{ charts.payments.labels|length }})
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            cutout: '60%'
+        }
     });
+
+    // Product Distribution Chart
+    const productCtx = document.getElementById('productChart').getContext('2d');
+    new Chart(productCtx, {
+        type: 'pie',
+        data: {
+            labels: {{ charts.products.labels|safe }},
+            datasets: [{
+                data: {{ charts.products.datasets.0.data|safe }},
+                backgroundColor: colorPalette.slice(0, {{ charts.products.labels|length }})
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { position: 'right' }
+            }
+        }
+    });
+
+    // Inventory Chart
+    const inventoryCtx = document.getElementById('inventoryChart').getContext('2d');
+    new Chart(inventoryCtx, {
+        type: 'bar',
+        data: {
+            labels: {{ inventory_labels|safe }},
+            datasets: [{
+                label: '{% trans "Stock Available" %}',
+                data: {{ inventory_data|safe }},
+                backgroundColor: colorPalette.slice(0, {{ inventory_labels|length }})
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: { beginAtZero: true }
+            }
+        }
+    });
+}
+
+// Refresh dashboard data
+function refreshDashboard() {
+    const period = document.getElementById('period').value;
+    const url = new URL(window.location.href);
+    url.searchParams.set('period', period);
+    
+    fetch(url)
+        .then(response => response.text())
+        .then(html => {
+            document.documentElement.innerHTML = html;
+            initializeCharts();
+        })
+        .catch(error => console.error('Error refreshing dashboard:', error));
+}
+
+// Export data functionality
+function exportData(format) {
+    const period = document.getElementById('period').value;
+    window.open(`/admin/export-dashboard/?format=${format}&period=${period}`, '_blank');
+}
+
+// Auto-refresh every 5 minutes
+setInterval(refreshDashboard, 300000);
 </script>
 
 {% endblock %}

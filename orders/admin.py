@@ -14,6 +14,9 @@ class OrderAdmin(ModelAdmin):
 
 
 
+
+
+
 @admin.register(OrderProduct)
 class OrderProductAdmin(ModelAdmin):
     list_display = ("order_number", "product", "product_images", "color", "size", "quantity", "total_amount")

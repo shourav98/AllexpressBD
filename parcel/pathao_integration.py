@@ -31,8 +31,8 @@ class PathaoAPIClient:
         self.max_retries = 3
         self.timeout = 30
 
-        # Validate required settings
-        if not all([self.client_id, self.client_secret, self.username, self.password, self.store_id]):
+        # Validate required settings (store_id can be obtained from API)
+        if not all([self.client_id, self.client_secret, self.username, self.password]):
             raise ValidationError("Missing required Pathao API settings")
 
     def authenticate(self):
@@ -50,7 +50,7 @@ class PathaoAPIClient:
         try:
             logger.info("Authenticating with Pathao API")
             logger.info(f"Auth URL: {url}")
-            logger.info(f"Auth payload: {payload}")
+            logger.info(f"Auth payload keys: {list(payload.keys())}")  # Don't log sensitive data
             response = requests.post(url, json=payload, headers=headers, timeout=self.timeout)
             logger.info(f"Auth response status: {response.status_code}")
             logger.info(f"Auth response: {response.text}")
@@ -62,13 +62,32 @@ class PathaoAPIClient:
                 if self.access_token:
                     logger.info("Pathao authentication successful")
                     # Try to get stores after successful authentication
-                    self.get_stores()
+                    stores = self.get_stores()
+                    if stores and len(stores) > 0:
+                        # Update store_id if not set or different
+                        api_store_id = stores[0].get('store_id')
+                        if api_store_id and str(api_store_id) != str(self.store_id):
+                            logger.info(f"Updating store_id from {self.store_id} to {api_store_id}")
+                            self.store_id = str(api_store_id)
                     return True
                 else:
-                    logger.error("No access token received from Pathao")
+                    logger.error(f"No access token received from Pathao. Response: {data}")
                     return False
             else:
                 logger.error(f"Pathao authentication failed: {response.status_code} - {response.text}")
+                # Try alternative base URL if sandbox fails
+                if "courier-api-sandbox" in self.base_url:
+                    alt_url = self.base_url.replace("courier-api-sandbox", "api-hermes")
+                    logger.info(f"Trying alternative URL: {alt_url}")
+                    alt_response = requests.post(alt_url + "/aladdin/api/v1/issue-token", json=payload, headers=headers, timeout=self.timeout)
+                    logger.info(f"Alt auth response status: {alt_response.status_code}")
+                    if alt_response.status_code == 200:
+                        alt_data = alt_response.json()
+                        self.access_token = alt_data.get('access_token')
+                        if self.access_token:
+                            logger.info("Pathao authentication successful with alternative URL")
+                            self.base_url = alt_url
+                            return True
                 return False
 
         except requests.exceptions.RequestException as e:
@@ -247,14 +266,14 @@ class PathaoAPIClient:
 
     def get_delivery_cost(self, city_id, zone_id, delivery_type=48, item_type=2, item_weight=1):
         """Calculate delivery cost"""
-        url = f"{self.base_url}/aladdin/api/v1/calculate-delivery-cost"
+        url = f"{self.base_url}/aladdin/api/v1/merchant/price-plan"
         payload = {
-            'city_id': city_id,
-            'zone_id': zone_id,
-            'delivery_type': delivery_type,
-            'item_type': item_type,
             'store_id': self.store_id,
-            'item_weight': item_weight
+            'item_type': item_type,
+            'delivery_type': delivery_type,
+            'item_weight': item_weight,
+            'recipient_city': city_id,
+            'recipient_zone': zone_id
         }
 
         try:
@@ -263,6 +282,9 @@ class PathaoAPIClient:
             if response.status_code == 200:
                 data = response.json()
                 logger.info("Delivery cost calculated successfully")
+                # Transform response to match expected format
+                if 'data' in data and 'price' in data['data']:
+                    return {'data': {'total_price': data['data']['price']}}
                 return data
             else:
                 logger.error(f"Failed to calculate delivery cost: {response.status_code} - {response.text}")
@@ -282,11 +304,9 @@ class PathaoAPIClient:
 
         # Validate required fields
         required_fields = [
-            'store_id', 'merchant_order_id', 'sender_name', 'sender_phone',
-            'recipient_name', 'recipient_phone', 'recipient_address',
-            'recipient_city', 'recipient_zone', 'recipient_area', 'item_quantity', 'item_weight',
-            'amount_to_collect', 'item_description'
-        ]  # Updated to match actual field names in payload
+            'store_id', 'merchant_order_id', 'recipient_name', 'recipient_phone',
+            'recipient_address', 'item_quantity', 'item_weight', 'amount_to_collect'
+        ]  # According to Pathao API documentation
 
         for field in required_fields:
             if field not in order_data:
@@ -439,18 +459,17 @@ def _handle_inventory_return(order):
 
     try:
         for order_product in order.orderproduct_set.all():
-            if order_product.variations.exists():
-                for variation in order_product.variations.all():
-                    variation.stock += order_product.quantity
-                    variation.save()
+            if order_product.variation_combination:
+                order_product.variation_combination.stock += order_product.quantity
+                order_product.variation_combination.save()
 
-                    # Log the inventory change
-                    InventoryLog.objects.create(
-                        product=order_product.product,
-                        variation=variation,
-                        change=order_product.quantity,
-                        reason='cancel'
-                    )
+                # Log the inventory change
+                InventoryLog.objects.create(
+                    product=order_product.product,
+                    variation_combination=order_product.variation_combination,
+                    change=order_product.quantity,
+                    reason='cancel'
+                )
             else:
                 order_product.product.stock += order_product.quantity
                 order_product.product.save()

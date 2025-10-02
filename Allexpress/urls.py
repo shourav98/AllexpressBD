@@ -1,11 +1,43 @@
 from django.contrib import admin
 from django.urls import path, include
-from . import views
-from django.conf.urls.static import static
+from django.shortcuts import redirect
+from django.http import JsonResponse, HttpResponse
+import csv
+from reportlab.pdfgen import canvas
+from io import BytesIO
 from django.conf import settings
+from django.conf.urls.static import static
+from . import views
+
+def export_dashboard(request):
+    format_type = request.GET.get('format', 'csv')
+    period = request.GET.get('period', '7')
+    
+    if format_type == 'csv':
+        response = HttpResponse(content_type='text/csv')
+        response['Content-Disposition'] = f'attachment; filename="dashboard_export_{period}.csv"'
+        
+        writer = csv.writer(response)
+        writer.writerow(['Metric', 'Value', 'Period'])
+        # Add your data here
+        
+        return response
+        
+    elif format_type == 'pdf':
+        buffer = BytesIO()
+        p = canvas.Canvas(buffer)
+        p.drawString(100, 750, f"Dashboard Export - Last {period} days")
+        p.showPage()
+        p.save()
+        
+        response = HttpResponse(buffer.getvalue(), content_type='application/pdf')
+        response['Content-Disposition'] = f'attachment; filename="dashboard_export_{period}.pdf"'
+        return response
 
 urlpatterns = [
+    # Admin URLs - THIS IS MISSING IN YOUR CURRENT CONFIG
     path('admin/', admin.site.urls),
+    path('admin/export-dashboard/', export_dashboard, name='export_dashboard'),
     path("",views.home, name= "home"),
     path("store/",include('store.urls')),
     path("cart/",include('carts.urls')),

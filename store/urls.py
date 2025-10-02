@@ -30,6 +30,7 @@ urlpatterns = [
 
     path("product/create/", views.product_create, name="product_create"),
     path("product/<int:product_id>/add-variation/", views.add_variation_ajax, name="add_variation_ajax"),
+    path("product/<int:product_id>/get-cart-quantity/", views.get_cart_quantity_ajax, name="get_cart_quantity_ajax"),
 
 ]
 

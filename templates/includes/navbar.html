@@ -429,5 +429,26 @@
                 navbar.style.top = `${announcementHeight}px`;
             }
         });
+
+        // Update cart count when page is restored from bfcache
+        window.addEventListener('pageshow', function(event) {
+            if (event.persisted) {
+                // Page was restored from bfcache, update cart count
+                fetch('/cart/count/')
+                    .then(response => response.json())
+                    .then(data => {
+                        const badges = document.querySelectorAll('.cart-badge');
+                        badges.forEach(badge => {
+                            if (data.count > 0) {
+                                badge.textContent = data.count;
+                                badge.style.display = 'flex';
+                            } else {
+                                badge.style.display = 'none';
+                            }
+                        });
+                    })
+                    .catch(error => console.error('Error updating cart count:', error));
+            }
+        });
     </script>
 </header>

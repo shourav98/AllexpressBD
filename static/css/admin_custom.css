@@ -1,0 +1,9 @@
+/* Red background for out of stock rows */
+tr.row-out-of-stock {
+  background-color: #ffe6e6 !important; /* light red */
+}
+
+/* Orange background for low stock rows */
+tr.row-low-stock {
+  background-color: #fff4e0 !important; /* light orange */
+}

@@ -174,7 +174,8 @@
         transition: all 0.3s ease;
     }
 
-    .filter-content.active {
+    .filter-content.active,
+    .filter-content.always-visible {
         display: block;
     }
 
@@ -200,6 +201,12 @@
     .category-list a:hover {
         color: #333;
         background: #f8f9fa;
+    }
+
+    .category-list a.active {
+        color: white;
+        background: #ff6200;
+        font-weight: 600;
     }
 
     .subcategory-list {
@@ -289,6 +296,72 @@
         padding: 0.5rem;
         border: 1px solid #ddd;
         border-radius: 6px;
+    }
+
+    .apply-filters-btn {
+        width: 100%;
+        padding: 0.5rem;
+        background: #333;
+        color: white;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        margin-top: 1rem;
+        transition: background 0.3s;
+    }
+
+    .apply-filters-btn:hover {
+        background: #555;
+    }
+
+    .brands-section {
+        margin-top: 2rem;
+        padding-top: 1rem;
+        border-top: 1px solid #ddd;
+    }
+
+    .brands-section h4 {
+        font-size: 1rem;
+        font-weight: 600;
+        color: #333;
+        margin-bottom: 1rem;
+    }
+
+    .brand-options {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+
+    .brand-option {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        cursor: pointer;
+    }
+
+    .brand-list {
+        list-style: none;
+        padding: 0;
+    }
+
+    .brand-list li {
+        margin-bottom: 0.5rem;
+    }
+
+    .brand-list a {
+        color: #666;
+        text-decoration: none;
+        transition: color 0.3s;
+        display: block;
+        padding: 0.5rem;
+        border-radius: 6px;
+    }
+
+    .brand-list a:hover,
+    .brand-list a.active {
+        color: white;
+        background: #ff6200;
     }
 
     /* Products Grid */
@@ -536,20 +609,28 @@
                     </div>
                     <div class="filter-content">
                         <ul class="category-list">
-                            <li><a href="{% url 'store' %}">All Products</a></li>
+                            <li><a href="{% url 'store' %}" {% if not category %}class="active"{% endif %}>All Products</a></li>
                             {% for parent in parent_categories %}
                                 <li>
-                                    <a href="{% url 'products_by_category' parent.slug %}">{{ parent.category_name }}</a>
+                                    <a href="{% url 'products_by_category' parent.slug %}" {% if category and category.slug == parent.slug %}class="active"{% endif %}>{{ parent.category_name }}</a>
                                     {% if parent.get_subcategories %}
                                         <ul class="subcategory-list">
                                             {% for subcategory in parent.get_subcategories %}
-                                                <li><a href="{% url 'products_by_category' subcategory.slug %}">{{ subcategory.category_name }}</a></li>
+                                                <li><a href="{% url 'products_by_category' subcategory.slug %}" {% if category and category.slug == subcategory.slug %}class="active"{% endif %}>{{ subcategory.category_name }}</a></li>
                                             {% endfor %}
                                         </ul>
                                     {% endif %}
                                 </li>
                             {% endfor %}
                         </ul>
+                        <div class="brands-section">
+                            <h4>Brands</h4>
+                            <ul class="brand-list">
+                                {% for brand_item in brands %}
+                                    <li><a href="{% url 'products_by_brand' brand_item.slug %}" {% if brand and brand.slug == brand_item.slug %}class="active"{% endif %}>{{ brand_item.brand_name }}</a></li>
+                                {% endfor %}
+                            </ul>
+                        </div>
                     </div>
                 </div>
 
@@ -557,9 +638,8 @@
                 <div class="filter-section">
                     <div class="filter-title">
                         Sizes
-                        <i class="fas fa-chevron-down"></i>
                     </div>
-                    <div class="filter-content">
+                    <div class="filter-content always-visible">
                         <div class="size-options">
                             <div class="size-option" data-size="40">40</div>
                             <div class="size-option" data-size="42">42</div>
@@ -568,6 +648,7 @@
                             <div class="size-option" data-size="48">48</div>
                             <div class="size-option" data-size="50">50</div>
                         </div>
+                        <button class="apply-filters-btn" data-filter="size">Apply Size Filter</button>
                     </div>
                 </div>
 
@@ -575,9 +656,8 @@
                 <div class="filter-section">
                     <div class="filter-title">
                         Price Range
-                        <i class="fas fa-chevron-down"></i>
                     </div>
-                    <div class="filter-content">
+                    <div class="filter-content always-visible">
                         <div class="price-range">
                             <div class="price-inputs">
                                 <select class="price-input" name="price_min" id="price_min">
@@ -599,6 +679,7 @@
                                     <option value="5000">Tk 5000+</option>
                                 </select>
                             </div>
+                            <button class="apply-filters-btn" data-filter="price">Apply Price Filter</button>
                         </div>
                     </div>
                 </div>
@@ -728,7 +809,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
-    // Size option selection and automatic filtering
+    // Size option selection (no automatic filtering)
     const sizeOptions = document.querySelectorAll('.size-option');
     let selectedSize = '{{ request.GET.size|default:"" }}'; // Get initial size from URL
     sizeOptions.forEach(option => {
@@ -739,11 +820,10 @@ document.addEventListener('DOMContentLoaded', function() {
             sizeOptions.forEach(opt => opt.classList.remove('active'));
             this.classList.add('active');
             selectedSize = this.dataset.size;
-            updateURL();
         });
     });
 
-    // Price range handling
+    // Price range handling (no automatic filtering)
     const priceMinSelect = document.getElementById('price_min');
     const priceMaxSelect = document.getElementById('price_max');
     const currentPriceMin = '{{ request.GET.price_min|default:"0" }}';
@@ -761,29 +841,30 @@ document.addEventListener('DOMContentLoaded', function() {
     let lastPriceMin = currentPriceMin;
     let lastPriceMax = currentPriceMax;
 
-    // Add event listeners for price changes
+    // Add event listeners for price changes (just store values)
     priceMinSelect.addEventListener('change', function() {
         lastPriceMin = this.value;
-        if (lastPriceMin && lastPriceMax) {
-            updateURL();
-        }
     });
 
     priceMaxSelect.addEventListener('change', function() {
         lastPriceMax = this.value;
-        if (lastPriceMin && lastPriceMax) {
+    });
+
+    // Apply filters buttons
+    const applyButtons = document.querySelectorAll('.apply-filters-btn');
+    applyButtons.forEach(button => {
+        button.addEventListener('click', function() {
             updateURL();
-        }
+        });
     });
 
     // Function to update URL with filter parameters
     function updateURL() {
         const priceMin = lastPriceMin;
         const priceMax = lastPriceMax;
-        if (!priceMin || !priceMax) return; // Only update if both prices are selected
         const url = new URL(window.location);
-        url.searchParams.set('price_min', priceMin);
-        url.searchParams.set('price_max', priceMax);
+        if (priceMin) url.searchParams.set('price_min', priceMin);
+        if (priceMax) url.searchParams.set('price_max', priceMax);
         if (selectedSize) {
             url.searchParams.set('size', selectedSize);
         } else {

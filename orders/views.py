@@ -64,6 +64,7 @@ def payments(request):
 
         cart_items = CartItem.objects.filter(user=request.user)
         for item in cart_items:
+            print(f"DEBUG: Payments - Creating OrderProduct for {item.product.name}, CartItem VC: {item.variation_combination}")
             order_product = OrderProduct()
             order_product.order = order
             order_product.payment = payment
@@ -73,8 +74,14 @@ def payments(request):
             order_product.product_price = item.product.price
             order_product.total_amount = item.sub_total()
             order_product.ordered = True
+            order_product.variation_combination = item.variation_combination
+            if item.variation_combination:
+                order_product.color = item.variation_combination.color_variation.variation_value if item.variation_combination.color_variation else ''
+                order_product.size = item.variation_combination.size_variation.variation_value if item.variation_combination.size_variation else ''
+                print(f"DEBUG: Payments - Set OrderProduct color: '{order_product.color}', size: '{order_product.size}'")
+            else:
+                print("DEBUG: Payments - No variation combination for OrderProduct")
             order_product.save()
-            order_product.variations.set(item.variations.all())
 
         CartItem.objects.filter(user=request.user).delete()
         return redirect('order_complete', order_number=order.order_number)
@@ -85,6 +92,9 @@ def payments(request):
 
 @csrf_exempt  # If needed, but consider removing if CSRF is handled properly
 def place_order(request):
+    if not request.user.is_authenticated:
+        return redirect('login')
+
     current_user = request.user
 
     # Load cities
@@ -126,6 +136,22 @@ def place_order(request):
         city_id = request.POST.get('pathao_city_id')
         zone_id = request.POST.get('pathao_zone_id')
         area_id = request.POST.get('pathao_area_id')
+
+        # Store form data in session for persistence
+        if form.is_valid():
+            request.session['checkout_form_data'] = {
+                'first_name': form.cleaned_data.get('first_name'),
+                'last_name': form.cleaned_data.get('last_name'),
+                'phone': form.cleaned_data.get('phone'),
+                'email': form.cleaned_data.get('email'),
+                'address_line_1': form.cleaned_data.get('address_line_1'),
+                'address_line_2': form.cleaned_data.get('address_line_2'),
+                'order_note': form.cleaned_data.get('order_note'),
+                'pathao_city_id': city_id,
+                'pathao_zone_id': zone_id,
+                'pathao_area_id': area_id,
+                'payment_method': payment_method,
+            }
 
         if form.is_valid() and city_id and zone_id and area_id:
             try:
@@ -203,8 +229,13 @@ def place_order(request):
 
                             if pathao_order and 'data' in pathao_order:
                                 # Create Pathao courier record
-                                consignment_id = pathao_order['data']['consignment_id']
+                                consignment_id = pathao_order['data'].get('consignment_id')
                                 delivery_status = pathao_order['data'].get('order_status', 'Pending')
+
+                                # If consignment_id is None or empty, use mock ID
+                                if not consignment_id:
+                                    consignment_id = f"MOCK-{order.order_number}"
+                                    delivery_status = 'Mock'
 
                                 pathao_courier = PathaoCourier(
                                     order=order,
@@ -223,18 +254,38 @@ def place_order(request):
                         logger.exception(f"Pathao integration failed for order {order.order_number}: {e}")
                         # Continue without Pathao
 
+                    # Ensure PathaoCourier record exists
+                    if not pathao_courier:
+                        # Create mock consignment ID for failed integrations
+                        mock_consignment_id = f"MOCK-{order.order_number}"
+                        try:
+                            pathao_courier = PathaoCourier(
+                                order=order,
+                                consignment_id=mock_consignment_id,
+                                merchant_order_id=order.order_number,
+                                delivery_status='Mock',
+                                delivery_fee=delivery_fee if 'delivery_fee' in locals() else Decimal('0.00')
+                            )
+                            pathao_courier.save()
+                            logger.info(f"PathaoCourier created with mock consignment ID {mock_consignment_id} for order {order.order_number}")
+                            print(f"DEBUG: PathaoCourier saved with ID {pathao_courier.id}, consignment_id {pathao_courier.consignment_id}")
+                        except Exception as e:
+                            logger.error(f"Failed to save PathaoCourier for order {order.order_number}: {e}")
+                            print(f"DEBUG: Failed to save PathaoCourier: {e}")
+
                     # Create payment record
                     payment = Payment(
                         user=request.user,
                         payment_id=order_number,
                         payment_method=payment_method,
                         amount_paid=str(order.order_total),
-                        status='Pending' if payment_method == 'Cash on Delivery' else 'Completed',
+                        status='Pending' if payment_method == 'Cash on Delivery' else 'Pending',
                     )
                     payment.save()
 
                     # Create order products
                     for item in cart_items:
+                        print(f"DEBUG: Creating OrderProduct for {item.product.name}, CartItem VC: {item.variation_combination}")
                         order_product = OrderProduct(
                             order=order,
                             payment=payment,
@@ -247,20 +298,35 @@ def place_order(request):
                         )
                         order_product.save()
 
-                        # Add variations
-                        variations = item.variations.all()
-                        order_product.variations.set(variations)
+                        # Add variation combination
+                        order_product.variation_combination = item.variation_combination
+                        if item.variation_combination:
+                            order_product.color = item.variation_combination.color_variation.variation_value if item.variation_combination.color_variation else ''
+                            order_product.size = item.variation_combination.size_variation.variation_value if item.variation_combination.size_variation else ''
+                            print(f"DEBUG: Set OrderProduct color: '{order_product.color}', size: '{order_product.size}'")
+                        else:
+                            print("DEBUG: No variation combination for OrderProduct")
+                        order_product.save()
 
                     # Clear cart
                     CartItem.objects.filter(user=current_user).delete()
 
                     # Set order status
-                    order.is_ordered = True
-                    order.status = 'New'
+                    if payment_method == 'Cash on Delivery':
+                        order.is_ordered = True
+                        order.status = 'New'
+                    else:
+                        # For SSLcommerz, wait for payment confirmation
+                        order.is_ordered = False
+                        order.status = 'Pending'
                     order.save()
 
                     # Send confirmation email
                     send_order_confirmation_email(order)
+
+                    # Clear checkout form data from session after successful order
+                    if 'checkout_form_data' in request.session:
+                        del request.session['checkout_form_data']
 
                     # Redirect based on payment method
                     if payment_method == 'SSLcommerz':
@@ -325,6 +391,12 @@ def place_order(request):
 
     # GET request - show checkout form
     form = OrderForm()
+
+    # Pre-populate form with session data if available
+    checkout_data = request.session.get('checkout_form_data')
+    if checkout_data:
+        form = OrderForm(initial=checkout_data)
+
     context = {
         'form': form,
         'cities': cities,
@@ -576,18 +648,13 @@ def payment_success(request):
                 return redirect('home')
 
     ordered_products = OrderProduct.objects.filter(order=order).select_related('product')
-    print(f"OrderProduct entries: {ordered_products.count()}")
-    for op in ordered_products:
-        print(f"OrderProduct: Product={op.product.name}, ordered={op.ordered}")
     subtotal = sum(item.product_price * item.quantity for item in ordered_products)
 
-    payment = Payment.objects.create(
-        user=order.user,
-        payment_id=val_id,
-        payment_method='SSLcommerz',
-        amount_paid=order.order_total,
-        status='Completed',
-    )
+    # Update the existing payment status
+    payment = Payment.objects.get(payment_id=tran_id)
+    payment.status = 'Success'
+    payment.save()
+
     order.payment = payment
     order.is_ordered = True
     order.status = 'Completed'

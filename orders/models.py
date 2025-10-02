@@ -1,6 +1,6 @@
 from django.db import models
 from accounts.models import Account
-from store.models import Product, Variation
+from store.models import Product, Variation, VariationCombination
 from django.conf import settings
 
 # Create your models here.
@@ -92,7 +92,7 @@ class OrderProduct(models.Model):
     payment = models.ForeignKey(Payment, on_delete=models.SET_NULL, blank=True, null=True)
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     product = models.ForeignKey(Product, on_delete=models.CASCADE)
-    variations = models.ManyToManyField(Variation, blank=True)
+    variation_combination = models.ForeignKey(VariationCombination, on_delete=models.SET_NULL, null=True, blank=True)
     color = models.CharField(max_length=100, blank=True)
     size = models.CharField(max_length=100, blank=True)
     quantity = models.IntegerField()
@@ -117,11 +117,10 @@ class OrderProduct(models.Model):
 @receiver(post_save, sender=OrderProduct)
 def update_stock(sender, instance, created, **kwargs):
     if created and instance.ordered:  # deduct only on confirmed orders
-        if instance.variations.exists():
-            for variation in instance.variations.all():
-                if variation.stock >= instance.quantity:
-                    variation.stock -= instance.quantity
-                    variation.save()
+        if instance.variation_combination:
+            if instance.variation_combination.stock >= instance.quantity:
+                instance.variation_combination.stock -= instance.quantity
+                instance.variation_combination.save()
         else:
             if instance.product.stock >= instance.quantity:
                 instance.product.stock -= instance.quantity
@@ -133,10 +132,9 @@ def update_stock(sender, instance, created, **kwargs):
 def restock_on_cancel(sender, instance, **kwargs):
     if instance.status == "Cancelled":
         for order_item in instance.orderproduct_set.all():
-            if order_item.variations.exists():
-                for variation in order_item.variations.all():
-                    variation.stock += order_item.quantity
-                    variation.save()
+            if order_item.variation_combination:
+                order_item.variation_combination.stock += order_item.quantity
+                order_item.variation_combination.save()
             else:
                 order_item.product.stock += order_item.quantity
                 order_item.product.save()

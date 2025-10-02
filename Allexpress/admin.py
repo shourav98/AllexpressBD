@@ -12,10 +12,35 @@ from django.template.response import TemplateResponse
 
 from accounts.models import Account, UserProfile
 from orders.models import Order, OrderProduct, Payment
-from store.models import Cart, CartItem, Category, Brand, Product, Variation, ReviewRating, ProductGallery, InventoryLog
+from store.models import Cart, CartItem, Category, Brand, Product, Variation, VariationCombination, ReviewRating, ProductGallery, InventoryLog
 
 # Import the dashboard callback
 from Allexpress.utils import dashboard_callback
+
+
+
+from unfold.admin import ModelAdmin
+from unfold.contrib.forms.widgets import WysiwygWidget
+from django.contrib import admin
+
+@admin.register(Order)
+class OrderAdmin(ModelAdmin):
+    dashboard_callback = dashboard_callback
+    
+    def get_urls(self):
+        urls = super().get_urls()
+        custom_urls = [
+            path('dashboard/', self.admin_site.admin_view(self.dashboard_view), name='dashboard'),
+        ]
+        return custom_urls + urls
+    
+    def dashboard_view(self, request):
+        context = {
+            **self.admin_site.each_context(request),
+            'title': 'Dashboard',
+        }
+        context = dashboard_callback(request, context)
+        return TemplateResponse(request, "admin/dashboard.html", context)
 
 class CustomDashboardView(DashboardView):
     template_name = 'admin/dashboard.html'
@@ -166,10 +191,18 @@ class ProductAdmin(ModelAdmin):
 
 @admin_site.register(Variation)
 class VariationAdmin(ModelAdmin):
-    list_display = ("product", "variation_category", "variation_value", "stock", "is_active")
-    list_editable = ("stock", "is_active")
+    list_display = ("product", "variation_category", "variation_value", "is_active")
+    list_editable = ("is_active",)
     list_filter = ("variation_category", "is_active", "product")
     search_fields = ("product__name", "variation_value")
+    list_per_page = 20
+
+@admin_site.register(VariationCombination)
+class VariationCombinationAdmin(ModelAdmin):
+    list_display = ("product", "size_variation", "color_variation", "stock", "is_active")
+    list_editable = ("stock", "is_active")
+    list_filter = ("product", "size_variation", "color_variation")
+    search_fields = ("product__name", "size_variation__variation_value", "color_variation__variation_value")
     list_per_page = 20
 
 @admin_site.register(ReviewRating)
@@ -182,9 +215,9 @@ class ReviewRatingAdmin(ModelAdmin):
 
 @admin_site.register(InventoryLog)
 class InventoryLogAdmin(ModelAdmin):
-    list_display = ("product", "variation", "change", "reason", "created_at")
+    list_display = ("product", "variation_combination", "change", "reason", "created_at")
     list_filter = ("reason", "created_at")
-    search_fields = ("product__name", "variation__variation_value")
+    search_fields = ("product__name", "variation_combination__size_variation__variation_value", "variation_combination__color_variation__variation_value")
     readonly_fields = ("created_at",)
     list_per_page = 20
 
